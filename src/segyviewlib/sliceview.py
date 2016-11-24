@@ -68,10 +68,8 @@ class SliceView(object):
 
     def context_changed(self, context):
         """ :type context: dict """
-        # print(context)
         self._image.set_cmap(context['colormap'])
-        self._image.set_clim(context['global_min'], context['global_max'])
-        # self._image.set_clim(context['view_min'], context['view_max'])
+        self._image.set_clim(context['min'], context['max'])
         self._update_indicators(context)
 
     def _update_indicators(self, context):

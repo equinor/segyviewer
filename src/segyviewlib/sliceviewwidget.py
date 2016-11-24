@@ -4,6 +4,7 @@ from math import copysign
 
 from segyviewlib import SliceView, LayoutCanvas, SliceModel, SliceModelController, SliceDataSource
 from matplotlib.cm import ScalarMappable
+from matplotlib.colors import Normalize
 
 
 class SliceViewWidget(LayoutCanvas):
@@ -52,6 +53,12 @@ class SliceViewWidget(LayoutCanvas):
             self._global_min = view_min if self._global_min is None else min(self._global_min, view_min)
             self._global_max = view_max if self._global_max is None else max(self._global_max, view_max)
 
+        vmin = self._global_min
+        vmax = self._global_max
+        if vmin <= 0.0 <= vmax:
+            vmax = max(abs(vmin), vmax)
+            vmin = -vmax
+
         return {
             "colormap": self._colormap_name,
             "show_indicators": self._show_indicators,
@@ -59,6 +66,9 @@ class SliceViewWidget(LayoutCanvas):
             "global_max": self._global_max,
             "view_min": view_min,
             "view_max": view_max,
+            "min": vmin,
+            "max": vmax,
+            "normalize": Normalize(vmin=vmin, vmax=vmax)
         }
 
     def _layout_changed(self):
@@ -93,6 +103,9 @@ class SliceViewWidget(LayoutCanvas):
     def _context_changed(self):
         for slice_view in self._slice_views.values():
             slice_view.context_changed(self._create_context())
+
+        ctx = self._create_context()
+        self._colormappable.set_clim(ctx['min'], ctx['max'])
         self.draw()
 
     def _create_slice_view_context_menu(self, subplot_index):
@@ -114,6 +127,7 @@ class SliceViewWidget(LayoutCanvas):
 
     def _subplot_clicked(self, event):
         keys = event['key']
+
         if self._show_indicators and event['button'] == 1 and not keys:
             x = int(event['x'])
             y = int(event['y'])
@@ -121,7 +135,7 @@ class SliceViewWidget(LayoutCanvas):
             self._slice_model_controller.model_xy_indexes_changed(slice_model, x, y)
             self._data_changed()
 
-        elif event['button'] == 3 and not keys:
+        elif event['button'] == 3 and (not keys or keys.state(ctrl=True)):
             subplot_index = event['subplot_index']
             context_menu = self._create_slice_view_context_menu(subplot_index)
             context_menu.exec_(self.mapToGlobal(QPoint(event['mx'], self.height() - event['my'])))
