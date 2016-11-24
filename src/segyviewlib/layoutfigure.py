@@ -10,13 +10,24 @@ class LayoutFigure(Figure):
         self._axes = []
         """ :type: list[Axes] """
 
+        self._colormap_axes = None
+        """ :type: Axes """
+
     def set_plot_layout(self, layout_spec):
-        grid_spec = gridspec.GridSpec(*layout_spec['dims'])
+        rows, columns = layout_spec['dims']
+        width = 0.025
+        ratios = [(1.0 - width) / float(columns)] * columns
+        ratios.append(width)
+
+        grid_spec = gridspec.GridSpec(rows, columns + 1, width_ratios=ratios)
 
         for axes in self._axes:
             self.delaxes(axes)
-
         self._axes = [self.add_subplot(grid_spec[sub_spec]) for sub_spec in layout_spec['grid']]
+
+        if self._colormap_axes is not None:
+            self.delaxes(self._colormap_axes)
+        self._colormap_axes = self.add_subplot(grid_spec[:, columns])
 
     def index(self, axes):
         """
@@ -24,7 +35,13 @@ class LayoutFigure(Figure):
         :type axes: Axes
         :rtype: int
         """
-        return self._axes.index(axes)
+        return None if axes is self._colormap_axes else self._axes.index(axes)
+
+    def colormap_axes(self):
+        """
+        :rtype: Axes
+        """
+        return self._colormap_axes
 
     def layout_axes(self):
         """ :rtype: list[Axes] """

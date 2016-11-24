@@ -1,7 +1,7 @@
 from PyQt4.QtCore import Qt, pyqtSignal, QVariant
 from PyQt4.QtGui import QComboBox, QIcon
 
-from segyviewer import resource_icon
+from segyviewlib import resource_icon
 
 
 class LayoutCombo(QComboBox):

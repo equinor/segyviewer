@@ -17,5 +17,5 @@ foreach (file ${RESOURCES})
             COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${file} ${CMAKE_BINARY_DIR}/resources/img
             )
 endforeach ()
-get_target_property(INSTALL_PATH package_segyview PACKAGE_INSTALL_PATH)
+get_target_property(INSTALL_PATH package_segyviewlib PACKAGE_INSTALL_PATH)
 install(FILES ${RESOURCES} DESTINATION ${INSTALL_PATH}/resources/img)

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import sys
 
+import matplotlib.cm as mcm
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QMainWindow, QWidget, QApplication, QLabel, QVBoxLayout
 
-from segyviewer import LayoutCombo, ColormapCombo, LayoutCanvas
+from segyviewlib import LayoutCombo, ColormapCombo, LayoutCanvas
 
 
 class TestGUI(QMainWindow):
@@ -33,17 +34,32 @@ class TestGUI(QMainWindow):
         self._layout_canvas.set_plot_layout(layout_combo.get_current_layout())
         layout.addWidget(self._layout_canvas)
 
+        colormap_name = str(self._colormap_combo.itemText(0))
+        self._colormap = mcm.ScalarMappable(cmap=colormap_name)
+        self._colormap.set_array([])
+
         self._colormap_label = QLabel()
         layout.addWidget(self._colormap_label)
 
         self.setCentralWidget(central_widget)
 
+        self._update_axes()
+
+    def _update_axes(self):
+        layout_figure = self._layout_canvas.layout_figure()
+        colormap_axes = layout_figure.colormap_axes()
+        self._colorbar = layout_figure.colorbar(self._colormap, cax=colormap_axes, use_gridspec=True)
+        self._colormap_changed(self._colormap_combo.currentIndex())
+
     def _layout_changed(self, layout):
         self._layout_canvas.set_plot_layout(layout)
+        self._update_axes()
 
     def _colormap_changed(self, index):
-        colormap = str(self._colormap_combo.itemText(index))
-        self._colormap_label.setText("Colormap selected: %s" % colormap)
+        colormap_name = str(self._colormap_combo.itemText(index))
+        self._colormap.set_cmap(colormap_name)
+        self._colormap_label.setText("Colormap selected: %s" % colormap_name)
+        self._layout_canvas.draw()
 
 
 if __name__ == '__main__':

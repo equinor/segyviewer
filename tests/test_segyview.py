@@ -1,8 +1,6 @@
 import os
 from unittest import TestCase
-import segyio
-from segyviewer import SegyIOWrapper, resource_icon_path
-import itertools
+from segyviewlib import resource_icon_path
 
 
 class TestSegyView(TestCase):
@@ -14,12 +12,3 @@ class TestSegyView(TestCase):
         print(path)
         self.assertTrue(os.path.exists(path))
 
-    def test_read_all_traces_to_memory_compare_with_depth_slice_and_verify_cube_rotation(self):
-        with segyio.open(self.filename, "r") as segy:
-            swrap = SegyIOWrapper.wrap(segy)
-            swrap.read_all_traces_to_memory()
-            for i, depth_slice in enumerate(swrap.depth_slices):
-                for ilno, xlno in itertools.product(range(len(segy.ilines)), range(len(segy.xlines))):
-                    self.assertEqual(depth_slice[ilno, xlno], segy.depth_slice[i][ilno, xlno],
-                                     "the cube values from read_all_traces and depth_slice differ {0} != {1}"
-                                     .format(depth_slice[ilno, xlno], segy.depth_slice[i][ilno, xlno]))

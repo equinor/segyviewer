@@ -3,7 +3,7 @@ from PyQt4.QtCore import pyqtSignal, Qt
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
-from segyviewer import LayoutFigure
+from segyviewlib import LayoutFigure
 
 
 class Keys(object):
@@ -116,7 +116,7 @@ class LayoutCanvas(FigureCanvas):
             self.subplot_released.emit(data)
 
     def _mouse_motion(self, event):
-        if event.inaxes is not None:
+        if event.inaxes is not None and self._figure.index(event.inaxes) is not None:
             data = self._create_event(event)
             self.subplot_motion.emit(data)
 

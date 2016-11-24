@@ -18,4 +18,4 @@ if (NOT DEFINED PY_PyQt4)
     message(FATAL_ERROR "PyQt4 module not found!")
 endif()
 
-add_subdirectory(segyviewer)
+add_subdirectory(segyviewlib)
