@@ -22,6 +22,11 @@ from .layoutcombo import LayoutCombo
 from .layoutfigure import LayoutFigure
 from .layoutcanvas import LayoutCanvas
 
+from .slicemodel import SliceModel, SliceDirection
+from .slicedatasource import SliceDataSource
+from .slicemodelcontroller import SliceModelController
+from .sliceview import SliceView
+from .sliceviewwidget import SliceViewWidget
 
 __version__ = '1.0.4'
 __copyright__ = 'Copyright 2016, Statoil ASA'
