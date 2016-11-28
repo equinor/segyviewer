@@ -3,7 +3,7 @@ if (NOT DEFINED PY_numpy)
     message(FATAL_ERROR "numpy module not found!")
 endif()
 
-python_module(segyio REQUIRED 1.0.3)
+python_module(segyio REQUIRED)
 if (NOT DEFINED PY_segyio)
     message(FATAL_ERROR "segyio module not found!")
 endif()
