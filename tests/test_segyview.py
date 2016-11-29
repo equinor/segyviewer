@@ -8,7 +8,18 @@ class TestSegyView(TestCase):
         self.filename = "test-data/small.sgy"
 
     def test_resources(self):
-        path = resource_icon_path("layouts_single.png")
-        print(path)
-        self.assertTrue(os.path.exists(path))
+        icons = ['folder.png',
+                 'layouts_four_grid.png',
+                 'layouts_single.png',
+                 'layouts_three_bottom_grid.png',
+                 'layouts_three_horizontal_grid.png',
+                 'layouts_three_top_grid.png',
+                 'layouts_three_vertical_grid.png',
+                 'layouts_two_horizontal_grid.png',
+                 'layouts_two_vertical_grid.png',
+                 'table_export.png']
 
+        for icon in icons:
+            path = resource_icon_path(icon)
+            print(path)
+            self.assertTrue(os.path.exists(path))
