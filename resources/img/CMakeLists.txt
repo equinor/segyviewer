@@ -1,4 +1,5 @@
 set(RESOURCES
+    folder.png
     layouts_four_grid.png
     layouts_single.png
     layouts_three_bottom_grid.png
@@ -7,6 +8,7 @@ set(RESOURCES
     layouts_three_vertical_grid.png
     layouts_two_horizontal_grid.png
     layouts_two_vertical_grid.png
+    table_export.png
 )
 
 add_custom_target(install_resources ALL)
