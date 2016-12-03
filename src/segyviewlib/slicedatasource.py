@@ -55,6 +55,8 @@ class SliceDataSource(object):
         if isinstance(self._source, segyio.SegyFile):
             self._source.close()
 
+        self._source = None
+
     def set_source_filename(self, filename):
         if filename:
             try:
@@ -94,3 +96,6 @@ class SliceDataSource(object):
             return list(range(self._source.samples))  # add t0?
         else:
             raise ValueError("Unknown direction: %s" % direction)
+
+    def __del__(self):
+        self._close_current_file()
