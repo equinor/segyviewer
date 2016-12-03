@@ -86,10 +86,11 @@ class LayoutCombo(QComboBox):
         for layout in layouts:
             self.add_layout_item(layout)
 
-        self.setMinimumHeight(45)
+        height = 30
+        self.setMinimumHeight(height)
+        self.setMaximumHeight(height)
         self.setMinimumWidth(60)
         self.setMaximumWidth(60)
-        self.setMaximumHeight(45)
 
         self.currentIndexChanged.connect(self._layout_changed)
 
