@@ -68,7 +68,7 @@ class SegyViewWidget(QWidget):
 
         indicator_visibility.setChecked(True)
         self._colormap_combo.setCurrentIndex(45)
-        layout_combo.setCurrentIndex(2)
+        layout_combo.setCurrentIndex(4)
 
         return toolbar
 
