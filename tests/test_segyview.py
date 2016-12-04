@@ -13,6 +13,8 @@ class TestSegyView(TestCase):
                  'layouts_single.png',
                  'layouts_three_bottom_grid.png',
                  'layouts_three_horizontal_grid.png',
+                 'layouts_three_left_grid.png',
+                 'layouts_three_right_grid.png',
                  'layouts_three_top_grid.png',
                  'layouts_three_vertical_grid.png',
                  'layouts_two_horizontal_grid.png',
