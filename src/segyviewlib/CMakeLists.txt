@@ -7,9 +7,10 @@ set(PYTHON_SOURCES
 
     slicemodel.py
     slicedatasource.py
-    slicemodelcontroller.py
+    sliceviewcontext.py
     sliceview.py
     sliceviewwidget.py
+    settingswindow.py
 
     segyviewwidget.py
 

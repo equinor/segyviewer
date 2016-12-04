@@ -2,87 +2,42 @@ from PyQt4.QtCore import QPoint
 from PyQt4.QtGui import QMenu, QAction
 from math import copysign
 
-from segyviewlib import SliceView, LayoutCanvas, SliceModel, SliceModelController, SliceDataSource
+from segyviewlib import SliceView, LayoutCanvas, SliceModel
 from matplotlib.cm import ScalarMappable
-from matplotlib.colors import Normalize
 
 
 class SliceViewWidget(LayoutCanvas):
-    def __init__(self, models, data_source, colormap='seismic', width=11.7, height=8.3, dpi=100, parent=None):
+    def __init__(self, context, width=11.7, height=8.3, dpi=100, parent=None):
+        """ :type context: segyviewlib.SliceViewContext """
         super(SliceViewWidget, self).__init__(width, height, dpi, parent)
 
-        self._available_slice_models = list(models)
-        """ :type: list[SliceModel] """
-        self._assigned_slice_models = list(models)
+        self._assigned_slice_models = list(context.models)
         """ :type: list[SliceModel] """
         self._slice_views = {}
         """ :type: dict[matplotlib.axes.Axes,SliceView] """
 
-        self._slice_model_controller = SliceModelController(self._available_slice_models, data_source)
-
-        self._colormap_name = colormap
-        self._colormappable = ScalarMappable(cmap=colormap)
+        self._colormappable = ScalarMappable(cmap=context.colormap)
         self._colormappable.set_array([])
 
-        self._show_indicators = False
+        self._context = context
+        context.context_changed.connect(self._context_changed)
+        context.data_changed.connect(self._data_changed)
+        context.data_source_changed.connect(self._layout_changed)
 
         self.layout_changed.connect(self._layout_changed)
         self.subplot_pressed.connect(self._subplot_clicked)
         self.subplot_scrolled.connect(self._subplot_scrolled)
         self.subplot_motion.connect(self._subplot_motion)
 
-        self._global_min = None
-        self._global_max = None
-        self._interpolation = 'nearest'
-
-    def set_colormap(self, colormap):
-        self._colormap_name = colormap
-        self._colormappable.set_cmap(colormap)
-        self._context_changed()
-
-    def show_indicators(self, visible):
-        self._show_indicators = visible
-        self._context_changed()
-
-    def set_interpolation(self, interpolation_name):
-        self._interpolation = interpolation_name
-        self._context_changed()
-
     def _create_context(self):
-        view_min = None
-        view_max = None
-
-        for model in self._assigned_slice_models:
-            view_min = model.min_value if view_min is None else min(model.min_value, view_min)
-            view_max = model.max_value if view_max is None else max(model.max_value, view_max)
-            self._global_min = view_min if self._global_min is None else min(self._global_min, view_min)
-            self._global_max = view_max if self._global_max is None else max(self._global_max, view_max)
-
-        vmin = self._global_min
-        vmax = self._global_max
-        if vmin <= 0.0 <= vmax:
-            vmax = max(abs(vmin), vmax)
-            vmin = -vmax
-
-        return {
-            "colormap": self._colormap_name,
-            "show_indicators": self._show_indicators,
-            "global_min": self._global_min,
-            "global_max": self._global_max,
-            "view_min": view_min,
-            "view_max": view_max,
-            "min": vmin,
-            "max": vmax,
-            "normalize": Normalize(vmin=vmin, vmax=vmax),
-            "interpolation": self._interpolation
-        }
+        return self._context.create_context(self._assigned_slice_models)
 
     def _layout_changed(self):
         fig = self.layout_figure()
         axes = fig.layout_axes()
         self._slice_views.clear()
 
-        for model in self._available_slice_models:
+        for model in self._context.models:
             model.visible = False
 
         for index, ax in enumerate(axes):
@@ -97,7 +52,7 @@ class SliceViewWidget(LayoutCanvas):
         colorbar = self.layout_figure().colorbar(self._colormappable, cax=colormap_axes, use_gridspec=True)
         colorbar.ax.tick_params(labelsize=9)
 
-        self._slice_model_controller.load_data()
+        self._context.load_data()
         self._data_changed()
 
     def _data_changed(self):
@@ -107,10 +62,11 @@ class SliceViewWidget(LayoutCanvas):
         self._context_changed()
 
     def _context_changed(self):
-        for slice_view in self._slice_views.values():
-            slice_view.context_changed(self._create_context())
-
         ctx = self._create_context()
+        for slice_view in self._slice_views.values():
+            slice_view.context_changed(ctx)
+
+        self._colormappable.set_cmap(ctx['colormap'])
         self._colormappable.set_clim(ctx['min'], ctx['max'])
         self.draw()
 
@@ -124,7 +80,7 @@ class SliceViewWidget(LayoutCanvas):
 
             return fn
 
-        for model in self._available_slice_models:
+        for model in self._context.models:
             action = QAction(model.title, self)
             action.triggered.connect(reassign(model))
             context_menu.addAction(action)
@@ -134,12 +90,12 @@ class SliceViewWidget(LayoutCanvas):
     def _subplot_clicked(self, event):
         keys = event['key']
 
-        if self._show_indicators and event['button'] == 1 and not keys:
+        if self._context.indicators and event['button'] == 1 and not keys:
             x = int(event['x'])
             y = int(event['y'])
             slice_model = self._get_slice_view(event).model()
-            self._slice_model_controller.model_xy_indexes_changed(slice_model, x, y)
-            self._data_changed()
+            self._context.update_index_for_direction(slice_model.x_index_direction, x)
+            self._context.update_index_for_direction(slice_model.y_index_direction, y)
 
         elif event['button'] == 3 and (not keys or keys.state(ctrl=True)):
             subplot_index = event['subplot_index']
@@ -155,11 +111,10 @@ class SliceViewWidget(LayoutCanvas):
             step = copysign(step, event['step'])
 
             slice_model = self._get_slice_view(event).model()
-            index = slice_model.index + step
+            index = int(slice_model.index + step)
 
             if 0 <= index < len(slice_model):
-                self._slice_model_controller.model_index_changed(slice_model, int(index))
-                self._data_changed()
+                self._context.update_index_for_direction(slice_model.index_direction, index)
 
         elif keys.state(ctrl=True) or keys.state(shift=True):
             x = event['x']
@@ -189,9 +144,3 @@ class SliceViewWidget(LayoutCanvas):
                 slice_view = self._get_slice_view(event)
                 slice_view.pan(dx, dy)
                 self._context_changed()
-
-    def slice_data_source_changed(self):
-        self._global_max = None
-        self._global_min = None
-        self._slice_model_controller.reset()
-        self._layout_changed()

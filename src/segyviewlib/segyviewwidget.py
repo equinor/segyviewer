@@ -1,10 +1,6 @@
-from PyQt4.QtGui import QCheckBox, QWidget, QComboBox
-from PyQt4.QtGui import QFileDialog
-from PyQt4.QtGui import QToolButton, QToolBar, QVBoxLayout
-from PyQt4.QtGui import QWidget
+from PyQt4.QtGui import QFileDialog, QToolButton, QToolBar, QVBoxLayout, QWidget
 
-from segyviewlib import ColormapCombo
-from segyviewlib import LayoutCombo
+from segyviewlib import ColormapCombo, LayoutCombo, SettingsWindow, SliceViewContext
 from segyviewlib import SliceDataSource, SliceModel, SliceDirection as SD, SliceViewWidget, resource_icon
 
 
@@ -20,9 +16,14 @@ class SegyViewWidget(QWidget):
         slice_data_source = SliceDataSource(filename)
         self._slice_data_source = slice_data_source
 
-        self._slice_view_widget = SliceViewWidget(slice_models, slice_data_source, 'seismic', width, height, dpi, self)
+        self._context = SliceViewContext(slice_models, slice_data_source)
+        self._context.show_indicators(True)
+
+        self._slice_view_widget = SliceViewWidget(self._context, width, height, dpi, self)
 
         layout = QVBoxLayout()
+
+        self._settings_window = SettingsWindow(self._context, self)
 
         self._toolbar = self._create_toolbar(color_maps)
         self._toolbar.setVisible(show_toolbar)
@@ -30,8 +31,6 @@ class SegyViewWidget(QWidget):
         layout.addWidget(self._slice_view_widget)
 
         self.setLayout(layout)
-
-        self.show_advanced_features(False)
 
     def toolbar(self):
         """ :rtype: QToolBar """
@@ -51,22 +50,25 @@ class SegyViewWidget(QWidget):
         self._colormap_combo.currentIndexChanged[int].connect(self._colormap_changed)
         toolbar.addWidget(self._colormap_combo)
 
-        indicator_visibility = QCheckBox("Indicators")
-        indicator_visibility.toggled.connect(self._slice_view_widget.show_indicators)
-        toolbar.addWidget(indicator_visibility)
-
         save_button = QToolButton()
         save_button.setToolTip("Save as image")
         save_button.setIcon(resource_icon("table_export.png"))
         save_button.clicked.connect(self._save_figure)
         toolbar.addWidget(save_button)
 
-        self._interpolation_combo = QComboBox()
-        self._interpolation_combo.addItems(['nearest', 'catrom', 'sinc'])
-        self._interpolation_combo.currentIndexChanged.connect(self._interpolation_changed)
-        self._interpolation_action = toolbar.addWidget(self._interpolation_combo)
+        self._settings_button = QToolButton()
+        self._settings_button.setToolTip("Toggle settings visibility")
+        self._settings_button.setIcon(resource_icon("cog.png"))
+        self._settings_button.setCheckable(True)
+        self._settings_button.toggled.connect(self._show_settings)
+        toolbar.addWidget(self._settings_button)
 
-        indicator_visibility.setChecked(True)
+        def toggle_on_close(event):
+            self._settings_button.setChecked(False)
+            event.accept()
+
+        self._settings_window.closeEvent = toggle_on_close
+
         self._colormap_combo.setCurrentIndex(45)
         layout_combo.setCurrentIndex(4)
 
@@ -74,11 +76,11 @@ class SegyViewWidget(QWidget):
 
     def _colormap_changed(self, index):
         colormap = str(self._colormap_combo.itemText(index))
-        self._slice_view_widget.set_colormap(colormap)
+        self._context.set_colormap(colormap)
 
     def _interpolation_changed(self, index):
         interpolation_name = str(self._interpolation_combo.itemText(index))
-        self._slice_view_widget.set_interpolation(interpolation_name)
+        self._context.set_interpolation(interpolation_name)
 
     def _save_figure(self):
         formats = "Portable Network Graphic (*.png);;Adobe Acrobat (*.pdf);;Scalable Vector Graphics (*.svg)"
@@ -92,7 +94,9 @@ class SegyViewWidget(QWidget):
 
     def set_source_filename(self, filename):
         self._slice_data_source.set_source_filename(filename)
-        self._slice_view_widget.slice_data_source_changed()
 
-    def show_advanced_features(self, visible):
-        self._interpolation_action.setVisible(visible)
+    def _show_settings(self, toggled):
+        self._settings_window.setVisible(toggled)
+        if self._settings_window.isMinimized():
+            self._settings_window.showNormal()
+
