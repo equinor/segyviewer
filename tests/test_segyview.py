@@ -8,7 +8,8 @@ class TestSegyView(TestCase):
         self.filename = "test-data/small.sgy"
 
     def test_resources(self):
-        icons = ['folder.png',
+        icons = ['cog.png',
+                 'folder.png',
                  'layouts_four_grid.png',
                  'layouts_single.png',
                  'layouts_three_bottom_grid.png',
