@@ -1,3 +1,5 @@
+from PyQt4.QtCore import QObject, pyqtSignal
+
 from .slicemodel import SliceDirection
 import numpy as np
 import segyio
@@ -43,9 +45,11 @@ class EmptyDataSource(object):
         return segyio.TraceSortingFormat.CROSSLINE_SORTING
 
 
-class SliceDataSource(object):
+class SliceDataSource(QObject):
+    slice_data_source_changed = pyqtSignal()
+
     def __init__(self, filename):
-        super(SliceDataSource, self).__init__()
+        QObject.__init__(self)
 
         self._source = None
         """ :type: segyio.SegyFile """
@@ -61,7 +65,7 @@ class SliceDataSource(object):
         if filename:
             try:
                 source = segyio.open(filename, "r")
-            except :
+            except:
                 raise
             else:
                 self._close_current_file()
@@ -70,6 +74,8 @@ class SliceDataSource(object):
         else:
             self._close_current_file()
             self._source = EmptyDataSource()
+
+        self.slice_data_source_changed.emit()
 
     def read_slice(self, direction, index):
         if direction == SliceDirection.inline:
@@ -93,9 +99,16 @@ class SliceDataSource(object):
         elif direction == SliceDirection.crossline:
             return self._source.xlines
         elif direction == SliceDirection.depth:
-            return list(range(self._source.samples))  # add t0?
+            return np.fromiter(range(self._source.samples), dtype=np.uintc)  # add t0?
         else:
             raise ValueError("Unknown direction: %s" % direction)
 
     def __del__(self):
         self._close_current_file()
+
+    def dims(self):
+        iline_count = len(self._source.ilines)
+        xline_count = len(self._source.xlines)
+        offset_count = 1
+        sample_count = self._source.samples
+        return iline_count, xline_count, offset_count, sample_count
