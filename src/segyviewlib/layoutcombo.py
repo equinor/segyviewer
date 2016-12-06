@@ -33,6 +33,20 @@ class LayoutCombo(QComboBox):
                 }
             },
             {
+                "icon": "layouts_three_left_grid.png",
+                "spec": {
+                    "dims": (2, 2),
+                    "grid": [(slice(0, 2), 0), (0, 1), (1, 1)]
+                }
+            },
+            {
+                "icon": "layouts_three_right_grid.png",
+                "spec": {
+                    "dims": (2, 2),
+                    "grid": [(0, 0), (1, 0), (slice(0, 2), 1)]
+                }
+            },
+            {
                 "icon": "layouts_two_horizontal_grid.png",
                 "spec": {
                     "dims": (2, 1),
@@ -72,10 +86,11 @@ class LayoutCombo(QComboBox):
         for layout in layouts:
             self.add_layout_item(layout)
 
-        self.setMinimumHeight(45)
+        height = 30
+        self.setMinimumHeight(height)
+        self.setMaximumHeight(height)
         self.setMinimumWidth(60)
         self.setMaximumWidth(60)
-        self.setMaximumHeight(45)
 
         self.currentIndexChanged.connect(self._layout_changed)
 
