@@ -1,6 +1,6 @@
 import sys
-from PyQt4.QtGui import QCheckBox, QWidget, QFormLayout, QComboBox, QLabel, QSpinBox, QValidator, QDoubleSpinBox, \
-    QHBoxLayout
+from PyQt4.QtGui import QCheckBox, QWidget, QFormLayout, QComboBox, QLabel, QSpinBox, QValidator
+from PyQt4.QtGui import QPushButton, QDoubleSpinBox, QHBoxLayout, QVBoxLayout
 from PyQt4.QtCore import Qt
 
 from segyviewlib import SliceDirection
@@ -141,7 +141,19 @@ class SettingsWindow(QWidget):
         self._interpolation_combo.currentIndexChanged.connect(self._interpolation_changed)
         layout.addRow("Interpolation Type:", self._interpolation_combo)
 
-        self.setLayout(layout)
+        vertical_layout = QVBoxLayout()
+
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        close_button = QPushButton("Close")
+        close_button.clicked.connect(self.close)
+        button_layout.addStretch()
+        button_layout.addWidget(close_button)
+
+        vertical_layout.addLayout(layout)
+        vertical_layout.addLayout(button_layout)
+
+        self.setLayout(vertical_layout)
 
     def _create_user_value(self):
         layout = QHBoxLayout()
@@ -204,15 +216,19 @@ class SettingsWindow(QWidget):
         return fn
 
     def _user_value_changed(self):
-        self._user_minimum_value.setMaximum(self._user_maximum_value.value())
-        self._user_maximum_value.setMinimum(self._user_minimum_value.value())
         min_value = None
         max_value = None
         if self._user_minimum_active.isChecked():
             min_value = self._user_minimum_value.value()
+            self._user_maximum_value.setMinimum(min_value)
+        else:
+            self._user_maximum_value.setMinimum(-sys.float_info.max)
 
         if self._user_maximum_active.isChecked():
             max_value = self._user_maximum_value.value()
+            self._user_minimum_value.setMaximum(max_value)
+        else:
+            self._user_minimum_value.setMaximum(sys.float_info.max)
 
         self._context.set_user_values(min_value, max_value)
 
