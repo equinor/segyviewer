@@ -24,9 +24,10 @@ from .layoutcanvas import LayoutCanvas
 
 from .slicemodel import SliceModel, SliceDirection
 from .slicedatasource import SliceDataSource
-from .slicemodelcontroller import SliceModelController
+from .sliceviewcontext import SliceViewContext
 from .sliceview import SliceView
 from .sliceviewwidget import SliceViewWidget
+from .settingswindow import SettingsWindow
 from .segyviewwidget import SegyViewWidget
 
 __version__ = '1.0.4'

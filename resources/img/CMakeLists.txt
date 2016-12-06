@@ -1,4 +1,5 @@
 set(RESOURCES
+    cog.png
     folder.png
     layouts_four_grid.png
     layouts_single.png
