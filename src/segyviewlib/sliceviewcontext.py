@@ -25,6 +25,7 @@ class SliceViewContext(QObject):
         self._global_max = None
         self._user_min_value = None
         self._user_max_value = None
+
         self._interpolation = interpolation
         self._symmetric_scale = True
         self._image_size = image_size
@@ -85,6 +86,28 @@ class SliceViewContext(QObject):
 
     def set_interpolation(self, interpolation_name):
         self._interpolation = str(interpolation_name)
+        self.context_changed.emit()
+
+    def set_x_index_constraint(self, index_direction, min_x, max_x):
+        model = self.model_for_direction(direction=index_direction)
+
+        if max_x is not None:
+            model.max_x_index_constraint = max_x
+
+        if min_x is not None:
+            model.min_x_index_constraint = min_x
+
+        self.context_changed.emit()
+        
+    def set_y_index_constraint(self, index_direction, min_y, max_y):
+        model = self.model_for_direction(direction=index_direction)
+
+        if max_y is not None:
+            model.max_y_index_constraint = max_y
+
+        if min_y is not None:
+            model.min_y_index_constraint = min_y
+
         self.context_changed.emit()
 
     def set_user_values(self, min_value, max_value):
@@ -191,6 +214,12 @@ class SliceViewContext(QObject):
     def slice_data_source(self):
         """ :rtype: SliceDataSource"""
         return self._slice_data_source
+
+    def model_for_direction(self, direction):
+        for m in self._available_slice_models:
+            if m.index_direction == direction:
+                return m
+        return None
 
     def index_for_direction(self, direction):
         for m in self._available_slice_models:

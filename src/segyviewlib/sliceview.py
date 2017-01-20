@@ -72,6 +72,7 @@ class SliceView(object):
         self._image.set_clim(context['min'], context['max'])
         self._image.set_interpolation(context['interpolation'])
         self._update_indicators(context)
+        self._set_limits()
 
     def _update_indicators(self, context):
         """ :type context: dict """
@@ -97,6 +98,13 @@ class SliceView(object):
         axes = self._image.axes
         axes.set_xlim(0, model.width)
         axes.set_ylim(model.height, 0)  # origin in image is upper...
+
+    def _set_limits(self):
+        model = self._model
+        axes = self._image.axes
+        axes.set_xlim(model.min_x_index_constraint, model.max_x_index_constraint)
+        axes.set_ylim(model.max_y_index_constraint, model.min_y_index_constraint)  # origin in image is upper...
+
 
     def zoom(self, x, y, zoom_factor_delta, reset_zoom=False):
         zoom_factor = self._zoom_factor + zoom_factor_delta
