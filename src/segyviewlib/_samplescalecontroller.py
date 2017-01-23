@@ -10,18 +10,17 @@ class SampleScaleController(QObject):
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
 
-        self._min_wdgt, self._min_active, self._min_spinbox = self._set_up_opt_spin_box()
+        self._min_active, self._min_spinbox = self._set_up_opt_spin_box()
 
         self._min_active.toggled.connect(self._value_changed)
         self._min_spinbox.valueChanged.connect(self._value_changed)
 
-        self._max_wdgt, self._max_active, self._max_spinbox = self._set_up_opt_spin_box()
+        self._max_active, self._max_spinbox = self._set_up_opt_spin_box()
 
         self._max_active.toggled.connect(self._value_changed)
         self._max_spinbox.valueChanged.connect(self._value_changed)
 
     def _set_up_opt_spin_box(self):
-
         check_box = QCheckBox()
         spin_box = QDoubleSpinBox()
         spin_box.setDecimals(5)
@@ -31,24 +30,7 @@ class SampleScaleController(QObject):
         spin_box.setDisabled(True)
         check_box.toggled.connect(spin_box.setEnabled)
 
-        bundle_widget = self._bundle_widgets(spin_box, check_box)
-        return bundle_widget, check_box, spin_box
-
-    def _bundle_widgets(self, spinbox, checkbox=None):
-        l = QHBoxLayout()
-
-        if checkbox is not None:
-            l.addWidget(checkbox, 0)
-        else:
-            l.addSpacing(25)
-        l.addStretch(0.5)
-        l.addWidget(spinbox, 2)
-        l.setContentsMargins(0, 0, 0, 0)
-
-        w = QWidget()
-        w.setContentsMargins(0, 1, 0, 1)
-        w.setLayout(l)
-        return w
+        return check_box, spin_box
 
     def _value_changed(self):
         min_value = None
@@ -68,9 +50,17 @@ class SampleScaleController(QObject):
         self.min_max_changed.emit((min_value, max_value))
 
     @property
-    def min_widget(self):
-        return self._min_wdgt
+    def min_checkbox(self):
+        return self._min_active
 
     @property
-    def max_widget(self):
-        return self._max_wdgt
+    def min_spinbox(self):
+        return self._min_spinbox
+
+    @property
+    def max_checkbox(self):
+        return self._max_active
+
+    @property
+    def max_spinbox(self):
+        return self._max_spinbox

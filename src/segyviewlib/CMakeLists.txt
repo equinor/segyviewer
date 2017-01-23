@@ -11,10 +11,10 @@ set(PYTHON_SOURCES
     sliceview.py
     sliceviewwidget.py
     settingswindow.py
-    sample_scale_controller.py
-    index_controller.py
-    array_spinbox.py
-
+    _samplescalecontroller.py
+    _indexcontroller.py
+    _plotexportsettingscontroller.py
+    arrayspinbox.py
     segyviewwidget.py
 
     )

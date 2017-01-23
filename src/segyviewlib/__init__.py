@@ -17,9 +17,10 @@ def resource_icon(name):
     return QIcon(resource_icon_path(name))
 
 
-from .array_spinbox import ArraySpinBox
-from .index_controller import IndexController
-from .sample_scale_controller import SampleScaleController
+from .arrayspinbox import ArraySpinBox
+from ._indexcontroller import IndexController
+from ._samplescalecontroller import SampleScaleController
+from ._plotexportsettingscontroller import PlotExportSettingsWidget
 
 from .colormapcombo import ColormapCombo
 from .layoutcombo import LayoutCombo

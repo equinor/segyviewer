@@ -4,6 +4,7 @@ from PyQt4.QtGui import QSpinBox, QValidator
 class ArraySpinBox(QSpinBox):
     def __init__(self, values, parent=None):
         QSpinBox.__init__(self, parent)
+        self.setKeyboardTracking(False)
         self._values = []
         """ :type: list[int]"""
         self.set_index_values(values)

@@ -1,9 +1,9 @@
 from __future__ import division
-from PyQt4.QtGui import QCheckBox, QWidget, QFormLayout, QComboBox, QLabel, QDoubleSpinBox
+from PyQt4.QtGui import QCheckBox, QWidget, QFormLayout, QComboBox, QLabel
 from PyQt4.QtGui import QPushButton, QHBoxLayout, QVBoxLayout, QTreeWidget, QTreeWidgetItem
 from PyQt4.QtCore import Qt, QObject
 
-from segyviewlib import SliceDirection, SampleScaleController, IndexController
+from segyviewlib import SliceDirection, SampleScaleController, IndexController, PlotExportSettingsWidget
 
 
 class SettingsWindow(QWidget):
@@ -37,36 +37,39 @@ class SettingsWindow(QWidget):
         f_layout.addRow("Maximum Value:", self._maximum_value)
 
         # iline
-        self._il_controller = IndexController(parent=self,
-                                              context=self._context,
-                                              slice_direction_index_source=SliceDirection.inline)
-        self._il_controller.index_changed.connect(self._index_changed_fn(SliceDirection.inline))
-        self._il_controller.min_max_changed.connect(self.iline_constraint_changed)
+        self._il_ctrl = IndexController(parent=self,
+                                        context=self._context,
+                                        slice_direction_index_source=SliceDirection.inline)
+        self._il_ctrl.index_changed.connect(self._index_changed_fn(SliceDirection.inline))
+        self._il_ctrl.min_max_changed.connect(self.iline_limits_changed)
 
         # xline
-        self._xl_controller = IndexController(parent=self,
-                                              context=self._context,
-                                              slice_direction_index_source=SliceDirection.crossline)
-        self._xl_controller.index_changed.connect(self._index_changed_fn(SliceDirection.crossline))
-        self._xl_controller.min_max_changed.connect(self.xline_constraint_changed)
+        self._xl_ctrl = IndexController(parent=self,
+                                        context=self._context,
+                                        slice_direction_index_source=SliceDirection.crossline)
+        self._xl_ctrl.index_changed.connect(self._index_changed_fn(SliceDirection.crossline))
+        self._xl_ctrl.min_max_changed.connect(self.xline_limits_changed)
 
         # depth
-        self._depth_controller = IndexController(parent=self,
-                                                 context=self._context,
-                                                 slice_direction_index_source=SliceDirection.depth)
-        self._depth_controller.index_changed.connect(self._index_changed_fn(SliceDirection.depth))
-        self._depth_controller.min_max_changed.connect(self.depth_constraint_changed)
+        self._depth_ctrl = IndexController(parent=self,
+                                           context=self._context,
+                                           slice_direction_index_source=SliceDirection.depth)
+        self._depth_ctrl.index_changed.connect(self._index_changed_fn(SliceDirection.depth))
+        self._depth_ctrl.min_max_changed.connect(self.depth_limits_changed)
 
         # sample
-        self._sample_controller = SampleScaleController(self)
-        self._sample_controller.min_max_changed.connect(self.sample_constraint_changed)
+        self._sample_ctrl = SampleScaleController(self)
+        self._sample_ctrl.min_max_changed.connect(self.sample_limits_changed)
 
         self._symmetric_scale = QCheckBox()
         self._symmetric_scale.toggled.connect(self._context.set_symmetric_scale)
 
         # view
+        self._view_label = QLabel("")
+        self._view_label.setDisabled(True)
         self._indicator_visibility = QCheckBox()
         self._indicator_visibility.toggled.connect(self._context.show_indicators)
+        self._indicator_visibility.toggled.connect(lambda: self._set_view_label(self._indicator_visibility.isChecked()))
 
         self._interpolation_combo = QComboBox()
         self._interpolations_names = ['nearest', 'catrom', 'sinc']
@@ -77,43 +80,45 @@ class SettingsWindow(QWidget):
         self._plt_settings_wdgt = PlotExportSettingsWidget(self, parent._slice_view_widget, self._context)
 
         # define tree layout
-
         tree_def = {"": [
-            {"Inline": [
-                {"": self._il_controller.current_index_label},
-                {"Inline:": self._il_controller.index_widget},
-                {"Minimum:": self._il_controller.min_widget},
-                {"Maximum:": self._il_controller.max_widget}
-            ]
-            },
-            {"Crossline": [
-                {"": self._xl_controller.current_index_label},
-                {"Crossline": self._xl_controller.index_widget},
-                {"Minimum:": self._xl_controller.min_widget},
-                {"Maximum:": self._xl_controller.max_widget}
-            ]
-            },
-            {"Depth": [
-                {"": self._depth_controller.current_index_label},
-                {"Depth:": self._depth_controller.index_widget},
-                {"Minimum:": self._depth_controller.min_widget},
-                {"Maximum:": self._depth_controller.max_widget}
-            ]
-            },
+            {"Inline": [{"set_expanded": True},
+                        {"": self._align(self._il_ctrl.current_index_label)},
+                        {"Inline:": self._align(self._il_ctrl.index_widget)},
+                        {"Minimum:": self._align(self._il_ctrl.min_spinbox, self._il_ctrl.min_checkbox)},
+                        {"Maximum:": self._align(self._il_ctrl.max_spinbox, self._il_ctrl.max_checkbox)}
+                        ]
+             },
+            {"Crossline": [{"set_expanded": True},
+                           {"": self._align(self._xl_ctrl.current_index_label)},
+                           {"Inline:": self._align(self._xl_ctrl.index_widget)},
+                           {"Minimum:": self._align(self._xl_ctrl.min_spinbox, self._xl_ctrl.min_checkbox)},
+                           {"Maximum:": self._align(self._xl_ctrl.max_spinbox, self._xl_ctrl.max_checkbox)}
+                           ]
+             },
+            {"Depth": [{"set_expanded": True},
+                       {"": self._align(self._depth_ctrl.current_index_label)},
+                       {"Inline:": self._align(self._depth_ctrl.index_widget)},
+                       {"Minimum:": self._align(self._depth_ctrl.min_spinbox, self._depth_ctrl.min_checkbox)},
+                       {"Maximum:": self._align(self._depth_ctrl.max_spinbox, self._depth_ctrl.max_checkbox)}
+                       ]
+             },
             {"Sample": [
-                {"Custom min.:": self._sample_controller.min_widget},
-                {"Custom max.:": self._sample_controller.max_widget},
-                {"Symmetric scale:": self._symmetric_scale}
+                {"Custom min.:": self._align(self._sample_ctrl.min_spinbox, self._sample_ctrl.min_checkbox)},
+                {"Custom max.:": self._align(self._sample_ctrl.max_spinbox, self._sample_ctrl.max_checkbox)},
+                {"Symmetric scale:": self._align(self._symmetric_scale)}
             ]
             },
-            {"View": [
-                {"Show Indicators:": self._indicator_visibility},
-                {"Interpolation Type:": self._interpolation_combo}
-            ]
-            },
-            {"Plot export": [
-                {"Fixed width x height:": self._plt_settings_wdgt.width_height_widget},
-                {"Unit:": self._plt_settings_wdgt.units_widget}
+            {"View": [{"": self._align(self._view_label)},
+                      {"Show Indicators:": self._align(self._indicator_visibility)},
+                      {"Interpolation Type:": self._align(self._interpolation_combo)}
+                      ]
+             },
+            {"Plot export dimensions": [
+                {"": self._align(self._plt_settings_wdgt.label)},
+                {"Fixed size": self._align(self._plt_settings_wdgt.checkbox)},
+                {"Width:": self._align(self._plt_settings_wdgt.width_spinbox)},
+                {"Height:": self._align(self._plt_settings_wdgt.height_spinbox)},
+                {"Units:": self._align(self._plt_settings_wdgt.units_combobox)}
             ]
             }
         ]}
@@ -122,9 +127,8 @@ class SettingsWindow(QWidget):
         tre = QTreeWidget(self)
         tre.setHeaderHidden(True)
         tre.setColumnCount(2)
-        tre.setMinimumSize(350, 600)
         tre.setColumnWidth(0, 200)
-        tre.setColumnWidth(1, 150)
+        tre.setColumnWidth(1, 140)
 
         self._build_tree(tre, tree_def, tre.invisibleRootItem())
 
@@ -144,7 +148,34 @@ class SettingsWindow(QWidget):
         vertical_layout.addLayout(button_layout, 0)
 
         self.setLayout(vertical_layout)
-        self.setMinimumSize(400, 930)
+        self.setMinimumSize(420, 720)
+
+    @staticmethod
+    def _align(widget, checkbox=None):
+
+        l = QHBoxLayout()
+
+        if checkbox is not None:
+            checkbox.setMaximumWidth(23)
+            l.addWidget(checkbox, 0)
+        else:
+            l.addSpacing(25)
+
+        l.addStretch(0.5)
+        if widget is not None:
+            widget.setMinimumWidth(140)
+            widget.setMaximumWidth(140)
+            l.addWidget(widget)
+        else:
+            l.addSpacing(140)
+
+        l.setContentsMargins(0, 0, 0, 0)
+        l.addStretch(1)
+
+        w = QWidget()
+        w.setContentsMargins(0, 2, 0, 2)
+        w.setLayout(l)
+        return w
 
     def _create_user_value(self):
         layout = QHBoxLayout()
@@ -162,10 +193,12 @@ class SettingsWindow(QWidget):
             elif isinstance(children, list):
                 for c in children:
                     self._build_tree(tree_wdgt, c, root)
+
+        elif parent == "set_expanded":  # a configuration item for the current root
+            root.setExpanded(children)
         else:
             item = QTreeWidgetItem(root)
             item.setText(0, parent)
-            item.setExpanded(True)
 
             if isinstance(children, list):
                 for c in children:
@@ -196,15 +229,18 @@ class SettingsWindow(QWidget):
 
         indexes = ctx.slice_data_source().indexes_for_direction(SliceDirection.inline).tolist()
         index = ctx.index_for_direction(SliceDirection.inline)
-        self._il_controller.update_view(indexes, index)
+        self._il_ctrl.update_view(indexes, index)
 
         indexes = ctx.slice_data_source().indexes_for_direction(SliceDirection.crossline).tolist()
         index = ctx.index_for_direction(SliceDirection.crossline)
-        self._xl_controller.update_view(indexes, index)
+        self._xl_ctrl.update_view(indexes, index)
 
         indexes = ctx.slice_data_source().indexes_for_direction(SliceDirection.depth).tolist()
         index = ctx.index_for_direction(SliceDirection.depth)
-        self._depth_controller.update_view(indexes, index)
+        self._depth_ctrl.update_view(indexes, index)
+
+    def _set_view_label(self, indicator_on):
+        self._view_label.setText("indicators {0}".format("on" if indicator_on else "off"))
 
     def _interpolation_changed(self, index):
         interpolation_name = str(self._interpolation_combo.itemText(index))
@@ -216,117 +252,20 @@ class SettingsWindow(QWidget):
 
         return fn
 
-    def sample_constraint_changed(self, values):
+    def sample_limits_changed(self, values):
         self._context.set_user_values(*values)
 
-    def depth_constraint_changed(self, values):
+    def depth_limits_changed(self, values):
         min, max = values
-        self._context.set_y_index_constraint(SliceDirection.crossline, min, max)
-        self._context.set_y_index_constraint(SliceDirection.inline, min, max)
+        self._context.set_y_view_limits(SliceDirection.crossline, min, max)
+        self._context.set_y_view_limits(SliceDirection.inline, min, max)
 
-    def iline_constraint_changed(self, values):
+    def iline_limits_changed(self, values):
         min, max = values
-        self._context.set_x_index_constraint(SliceDirection.crossline, min, max)
+        self._context.set_x_view_limits(SliceDirection.crossline, min, max)
+        self._context.set_x_view_limits(SliceDirection.depth, min, max)
 
-    def xline_constraint_changed(self, values):
+    def xline_limits_changed(self, values):
         min, max = values
-        self._context.set_x_index_constraint(SliceDirection.inline, min, max)
-
-
-class PlotExportSettingsWidget(QWidget):
-    def __init__(self, parent, slice_view_widget, context):
-        super(PlotExportSettingsWidget, self).__init__(parent)
-
-        self._slice_view_widget = slice_view_widget
-        self._context = context
-
-        self._dpi_units = ["in", "cm", "px"]
-        self._fix_size = QCheckBox()
-        self._fix_width = QDoubleSpinBox()
-        self._fix_width.setDisabled(True)
-        self._fix_height = QDoubleSpinBox()
-        self._fix_height.setDisabled(True)
-
-        self._fix_dpi_units = QComboBox()
-        self._fix_dpi_units.setDisabled(True)
-
-        self.dpi_wdgt = QWidget()
-        dpi_l = QHBoxLayout()
-        dpi_l.addSpacing(25)
-        dpi_l.addStretch(0.5)
-        dpi_l.addWidget(self._fix_dpi_units, 2)
-        dpi_l.setContentsMargins(0, 0, 0, 0)
-        self.dpi_wdgt.setLayout(dpi_l)
-
-        if parent is None:
-            w, h, dpi = 11.7, 8.3, 100
-        else:
-            fig = self._slice_view_widget.layout_figure()
-            w, h = fig.get_size_inches()
-            dpi = fig.dpi
-
-        self._fix_width.setMinimum(1)
-        self._fix_width.setMaximum(32000)
-        self._fix_width.setValue(w)
-
-        self._fix_height.setMinimum(1)
-        self._fix_height.setMaximum(32000)
-        self._fix_height.setValue(h)
-
-        self._fix_width.valueChanged.connect(self._fixed_image)
-        self._fix_height.valueChanged.connect(self._fixed_image)
-
-        self._fix_dpi_units.addItems(self._dpi_units)
-        self._fix_dpi_units.activated.connect(self._fixed_image)
-        self._fix_size.toggled.connect(self._fixed_image)
-
-        self.fix_wdgt = QWidget()
-        self._fix_size.setContentsMargins(0, 1, 0, 1)
-        self._fix_width.setContentsMargins(0, 1, 0, 1)
-        self._fix_height.setContentsMargins(0, 10, 0, 1)
-
-        wxh_layout = QHBoxLayout()
-        wxh_layout.setContentsMargins(0, 0, 0, 0)
-        wxh_layout.addWidget(self._fix_size)
-        wxh_layout.addWidget(self._fix_width)
-        wxh_layout.addWidget(self._fix_height)
-        self.fix_wdgt.setLayout(wxh_layout)
-
-    @property
-    def width_height_widget(self):
-        return self.fix_wdgt
-
-    @property
-    def units_widget(self):
-        return self.dpi_wdgt
-
-    @staticmethod
-    def to_inches(width, height, dpi, scale):
-        if scale == "in":
-            return (width, height, dpi)
-        elif scale == "cm":
-            return (width / 2.54, height / 2.54, dpi)
-        elif scale == "px":
-            return (width / dpi, height / dpi, dpi)
-        else:
-            raise NotImplementedError
-
-    def _fixed_image(self):
-        ctx = self._context
-
-        # toggle disabled
-        self._fix_height.setDisabled(not self._fix_size.isChecked())
-        self._fix_width.setDisabled(not self._fix_size.isChecked())
-        self._fix_dpi_units.setDisabled(not self._fix_size.isChecked())
-
-        if not self._fix_size.isChecked():
-            ctx.set_image_size(None)
-
-            return
-
-        w = self._fix_width.value()
-        h = self._fix_height.value()
-        dpi = 100
-        scale = self._fix_dpi_units.currentText()
-
-        ctx.set_image_size(*self.to_inches(w, h, dpi, scale))
+        self._context.set_x_view_limits(SliceDirection.inline, min, max)
+        self._context.set_y_view_limits(SliceDirection.depth, min, max)
