@@ -125,6 +125,7 @@ class SliceViewContext(QObject):
 
     def set_image_size(self, width, height = None, dpi = None):
         if width is None:
+            self._image_size = None
             return
 
         if height is None or dpi is None:
