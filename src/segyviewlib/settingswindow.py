@@ -1,3 +1,4 @@
+from __future__ import division
 from PyQt4.QtGui import QCheckBox, QWidget, QFormLayout, QComboBox, QLabel, QDoubleSpinBox
 from PyQt4.QtGui import QPushButton, QHBoxLayout, QVBoxLayout, QTreeWidget, QTreeWidgetItem
 from PyQt4.QtCore import Qt, QObject
@@ -306,7 +307,7 @@ class PlotExportSettingsWidget(QWidget):
         elif scale == "cm":
             return (width / 2.54, height / 2.54, dpi)
         elif scale == "px":
-            return (int(width) / dpi, int(height) / dpi, dpi)
+            return (width / dpi, height / dpi, dpi)
         else:
             raise NotImplementedError
 
