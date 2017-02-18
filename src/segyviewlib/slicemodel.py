@@ -29,12 +29,6 @@ class SliceModel(object):
         self._min_value = None
         self._max_value = None
 
-        self._min_x_index_constraint = 0
-        self._max_x_index_constraint = None
-
-        self._min_y_index_constraint = 0
-        self._max_y_index_constraint = None
-
         self._visible = True
         self._dirty = False
 
@@ -52,42 +46,6 @@ class SliceModel(object):
     def indexes(self, indexes):
         """ :type indexes: list[int] """
         self._indexes = indexes
-
-    @property
-    def max_x_index_constraint(self):
-        if self._max_x_index_constraint is None:
-            return len(self.x_indexes)
-        return self._max_x_index_constraint
-
-    @max_x_index_constraint.setter
-    def max_x_index_constraint(self, value):
-        self._max_x_index_constraint = value + 1  # setting the constraint to the index above to the max
-
-    @property
-    def min_x_index_constraint(self):
-        return self._min_x_index_constraint
-
-    @min_x_index_constraint.setter
-    def min_x_index_constraint(self, value):
-        self._min_x_index_constraint = value
-
-    @property
-    def min_y_index_constraint(self):
-        return self._min_y_index_constraint
-
-    @min_y_index_constraint.setter
-    def min_y_index_constraint(self, value):
-        self._min_y_index_constraint = value
-
-    @property
-    def max_y_index_constraint(self):
-        if self._max_y_index_constraint is None:
-            return len(self.y_indexes)
-        return self._max_y_index_constraint
-
-    @max_y_index_constraint.setter
-    def max_y_index_constraint(self, value):
-        self._max_y_index_constraint = value + 1  # setting the constraint to the index above to the max
 
     @property
     def x_indexes(self):
