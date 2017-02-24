@@ -1,67 +1,9 @@
 from __future__ import division
-import sys
-from PyQt4.QtGui import QCheckBox, QWidget, QFormLayout, QComboBox, QLabel, QSpinBox, QValidator
-from PyQt4.QtGui import QPushButton, QDoubleSpinBox, QHBoxLayout, QVBoxLayout
-from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QCheckBox, QWidget, QFormLayout, QComboBox, QLabel
+from PyQt4.QtGui import QPushButton, QHBoxLayout, QVBoxLayout, QTreeWidget, QTreeWidgetItem
+from PyQt4.QtCore import Qt, QObject
 
-from segyviewlib import SliceDirection
-
-
-class ArraySpinBox(QSpinBox):
-    def __init__(self, values, parent=None):
-        QSpinBox.__init__(self, parent)
-        self._values = []
-        """ :type: list[int]"""
-        self.set_index_values(values)
-        self.setMinimum(0)
-
-    def update_view(self, indexes, index):
-        self.blockSignals(True)
-        self.set_index_values(indexes)
-        self.setValue(index)
-        self.blockSignals(False)
-
-    def set_index_values(self, values):
-        self._values = values
-        if self.maximum() != len(values) - 1:
-            self.setMaximum(len(values) - 1)
-
-    def setValue(self, value):
-        if value != self.value():
-            QSpinBox.setValue(self, value)
-
-    def valueFromText(self, text):
-        text = str(text)
-        if text.strip() == "":
-            index = 0
-        else:
-            value = int(text)
-            index = self._values.index(value)
-        return index
-
-    def textFromValue(self, index):
-        return str(self._values[index])
-
-    def validate(self, text, pos):
-        text = str(text)
-        if text.strip() == "":
-            return QValidator.Acceptable, pos
-
-        try:
-            value = int(text)
-        except ValueError:
-            return QValidator.Invalid, pos
-
-        try:
-            index = self._values.index(value)
-        except ValueError:
-            for value in self._values:
-                if str(value).startswith(text):
-                    return QValidator.Intermediate, pos
-
-            return QValidator.Invalid, pos
-
-        return QValidator.Acceptable, pos
+from segyviewlib import SliceDirection, SampleScaleController, IndexController, PlotExportSettingsWidget
 
 
 class SettingsWindow(QWidget):
@@ -78,7 +20,7 @@ class SettingsWindow(QWidget):
         self._context.data_changed.connect(self._settings_changed)
         self._context.data_source_changed.connect(self._settings_changed)
 
-        layout = QFormLayout()
+        f_layout = QFormLayout()
 
         self._iline_count = QLabel("")
         self._xline_count = QLabel("")
@@ -87,101 +29,111 @@ class SettingsWindow(QWidget):
         self._minimum_value = QLabel("")
         self._maximum_value = QLabel("")
 
-        layout.addRow("Inline Count:", self._iline_count)
-        layout.addRow("Crossline Count:", self._xline_count)
-        layout.addRow("Offset Count:", self._offset_count)
-        layout.addRow("Sample Count:", self._sample_count)
-        layout.addRow("Minimum Value:", self._minimum_value)
-        layout.addRow("Maximum Value:", self._maximum_value)
+        f_layout.addRow("Inline Count:", self._iline_count)
+        f_layout.addRow("Crossline Count:", self._xline_count)
+        f_layout.addRow("Offset Count:", self._offset_count)
+        f_layout.addRow("Sample Count:", self._sample_count)
+        f_layout.addRow("Minimum Value:", self._minimum_value)
+        f_layout.addRow("Maximum Value:", self._maximum_value)
 
-        self.add_empty_row(layout)
+        # iline
+        self._il_ctrl = IndexController(parent=self,
+                                        context=self._context,
+                                        slice_direction_index_source=SliceDirection.inline)
+        self._il_ctrl.index_changed.connect(self._index_changed_fn(SliceDirection.inline))
+        self._il_ctrl.min_max_changed.connect(self.iline_limits_changed)
 
-        self._iline = ArraySpinBox([0])
-        self._iline.valueChanged[int].connect(self._index_changed_fn(SliceDirection.inline))
-        layout.addRow("Inline:", self._iline)
+        # xline
+        self._xl_ctrl = IndexController(parent=self,
+                                        context=self._context,
+                                        slice_direction_index_source=SliceDirection.crossline)
+        self._xl_ctrl.index_changed.connect(self._index_changed_fn(SliceDirection.crossline))
+        self._xl_ctrl.min_max_changed.connect(self.xline_limits_changed)
 
-        self._xline = ArraySpinBox([0])
-        self._xline.valueChanged[int].connect(self._index_changed_fn(SliceDirection.crossline))
-        layout.addRow("Crossline:", self._xline)
+        # depth
+        self._depth_ctrl = IndexController(parent=self,
+                                           context=self._context,
+                                           slice_direction_index_source=SliceDirection.depth)
+        self._depth_ctrl.index_changed.connect(self._index_changed_fn(SliceDirection.depth))
+        self._depth_ctrl.min_max_changed.connect(self.depth_limits_changed)
 
-        # self._offset = ArraySpinBox([1])
-        # layout.addRow("Offset", self._offset)
-
-        self._sample = ArraySpinBox([0])
-        self._sample.valueChanged[int].connect(self._index_changed_fn(SliceDirection.depth))
-        layout.addRow("Depth", self._sample)
-
-        self.add_empty_row(layout)
-
-        self._user_minimum_active, self._user_minimum_value, min_val_layout = self._create_user_value()
-        self._user_minimum_active.toggled.connect(self._user_value_changed)
-        self._user_minimum_value.valueChanged.connect(self._user_value_changed)
-        layout.addRow("Custom Minimum:", min_val_layout)
-
-        self._user_maximum_active, self._user_maximum_value, max_val_layout = self._create_user_value()
-        self._user_maximum_active.toggled.connect(self._user_value_changed)
-        self._user_maximum_value.valueChanged.connect(self._user_value_changed)
-        layout.addRow("Custom Maximum:", max_val_layout)
-
-        self._user_minimum_value.setMaximum(self._user_maximum_value.value())
-        self._user_maximum_value.setMinimum(self._user_minimum_value.value())
+        # sample
+        self._sample_ctrl = SampleScaleController(self)
+        self._sample_ctrl.min_max_changed.connect(self.sample_limits_changed)
 
         self._symmetric_scale = QCheckBox()
         self._symmetric_scale.toggled.connect(self._context.set_symmetric_scale)
-        layout.addRow("Symmetric scale:", self._symmetric_scale)
 
-        self.add_empty_row(layout)
-
+        # view
+        self._view_label = QLabel("")
+        self._view_label.setDisabled(True)
         self._indicator_visibility = QCheckBox()
         self._indicator_visibility.toggled.connect(self._context.show_indicators)
-        layout.addRow("Show Indicators:", self._indicator_visibility)
+        self._indicator_visibility.toggled.connect(lambda: self._set_view_label(self._indicator_visibility.isChecked()))
 
         self._interpolation_combo = QComboBox()
         self._interpolations_names = ['nearest', 'catrom', 'sinc']
         self._interpolation_combo.addItems(self._interpolations_names)
         self._interpolation_combo.currentIndexChanged.connect(self._interpolation_changed)
-        layout.addRow("Interpolation Type:", self._interpolation_combo)
 
-        self.add_empty_row(layout)
+        # plot export settings
+        self._plt_settings_wdgt = PlotExportSettingsWidget(self, parent._slice_view_widget, self._context)
 
-        self._dpi_units  = ["in", "cm", "px"]
-        self._fix_size   = QCheckBox()
-        self._fix_width  = QDoubleSpinBox()
-        self._fix_height = QDoubleSpinBox()
-        self._fix_dpi_units    = QComboBox()
+        # define tree layout
+        tree_def = {"": [
+            {"Inline": [{"set_expanded": True},
+                        {"": self._align(self._il_ctrl.current_index_label)},
+                        {"Inline:": self._align(self._il_ctrl.index_widget)},
+                        {"Minimum:": self._align(self._il_ctrl.min_spinbox, self._il_ctrl.min_checkbox)},
+                        {"Maximum:": self._align(self._il_ctrl.max_spinbox, self._il_ctrl.max_checkbox)}
+                        ]
+             },
+            {"Crossline": [{"set_expanded": True},
+                           {"": self._align(self._xl_ctrl.current_index_label)},
+                           {"Inline:": self._align(self._xl_ctrl.index_widget)},
+                           {"Minimum:": self._align(self._xl_ctrl.min_spinbox, self._xl_ctrl.min_checkbox)},
+                           {"Maximum:": self._align(self._xl_ctrl.max_spinbox, self._xl_ctrl.max_checkbox)}
+                           ]
+             },
+            {"Depth": [{"set_expanded": True},
+                       {"": self._align(self._depth_ctrl.current_index_label)},
+                       {"Inline:": self._align(self._depth_ctrl.index_widget)},
+                       {"Minimum:": self._align(self._depth_ctrl.min_spinbox, self._depth_ctrl.min_checkbox)},
+                       {"Maximum:": self._align(self._depth_ctrl.max_spinbox, self._depth_ctrl.max_checkbox)}
+                       ]
+             },
+            {"Sample": [
+                {"Custom min.:": self._align(self._sample_ctrl.min_spinbox, self._sample_ctrl.min_checkbox)},
+                {"Custom max.:": self._align(self._sample_ctrl.max_spinbox, self._sample_ctrl.max_checkbox)},
+                {"Symmetric scale:": self._align(self._symmetric_scale)}
+            ]
+            },
+            {"View": [{"": self._align(self._view_label)},
+                      {"Show Indicators:": self._align(self._indicator_visibility)},
+                      {"Interpolation Type:": self._align(self._interpolation_combo)}
+                      ]
+             },
+            {"Plot export dimensions": [
+                {"": self._align(self._plt_settings_wdgt.label)},
+                {"Fixed size": self._align(self._plt_settings_wdgt.checkbox)},
+                {"Width:": self._align(self._plt_settings_wdgt.width_spinbox)},
+                {"Height:": self._align(self._plt_settings_wdgt.height_spinbox)},
+                {"Units:": self._align(self._plt_settings_wdgt.units_combobox)}
+            ]
+            }
+        ]}
 
-        if parent is None:
-            w, h, dpi = 11.7, 8.3, 100
-        else:
-            fig = parent._slice_view_widget.layout_figure()
-            w, h = fig.get_size_inches()
-            dpi = fig.dpi
+        # setup the menu/navigation tree widget
+        tre = QTreeWidget(self)
+        tre.setHeaderHidden(True)
+        tre.setColumnCount(2)
+        tre.setColumnWidth(0, 200)
+        tre.setColumnWidth(1, 140)
 
-        self._fix_width.setMinimum(1)
-        self._fix_width.setMaximum(32000)
-        self._fix_width.setValue(w)
+        self._build_tree(tre, tree_def, tre.invisibleRootItem())
 
-        self._fix_height.setMinimum(1)
-        self._fix_height.setMaximum(32000)
-        self._fix_height.setValue(h)
-
-        self._fix_width.valueChanged.connect(self._fixed_image)
-        self._fix_height.valueChanged.connect(self._fixed_image)
-
-        self._fix_dpi_units.addItems(self._dpi_units)
-        self._fix_dpi_units.activated.connect(self._fixed_image)
-        self._fix_size.toggled.connect(self._fixed_image)
-
-        wxh_layout = QHBoxLayout()
-        wxh_layout.addWidget(self._fix_width)
-        wxh_layout.addWidget(self._fix_height)
-
-        layout.addRow("Fix export size:", self._fix_size)
-        layout.addRow("Width x Height:", wxh_layout)
-        layout.addRow("Unit:", self._fix_dpi_units)
-
+        # layout
         vertical_layout = QVBoxLayout()
-
         button_layout = QHBoxLayout()
         button_layout.setContentsMargins(0, 0, 0, 0)
         close_button = QPushButton("Close")
@@ -189,52 +141,70 @@ class SettingsWindow(QWidget):
         button_layout.addStretch()
         button_layout.addWidget(close_button)
 
-        vertical_layout.addLayout(layout)
-        vertical_layout.addLayout(button_layout)
+        vertical_layout.addLayout(f_layout, 0)
+        vertical_layout.addStretch()
+        vertical_layout.addWidget(tre, 1)
+        vertical_layout.addStretch()
+        vertical_layout.addLayout(button_layout, 0)
 
         self.setLayout(vertical_layout)
+        self.setMinimumSize(420, 720)
 
     @staticmethod
-    def to_inches(width, height, dpi, scale):
-        if scale == "in":
-            return (width, height, dpi)
-        elif scale == "cm":
-            return (width / 2.54, height / 2.54, dpi)
-        elif scale == "px":
-            return (int(width) / dpi, int(height) / dpi, dpi)
+    def _align(widget, checkbox=None):
+
+        l = QHBoxLayout()
+
+        if checkbox is not None:
+            checkbox.setMaximumWidth(23)
+            l.addWidget(checkbox, 0)
         else:
-            raise NotImplementedError
+            l.addSpacing(25)
 
-    def _fixed_image(self):
-        ctx = self._context
-        if not self._fix_size.isChecked():
-            ctx.set_image_size(None)
-            return
+        l.addStretch(0.5)
+        if widget is not None:
+            widget.setMinimumWidth(140)
+            widget.setMaximumWidth(140)
+            l.addWidget(widget)
+        else:
+            l.addSpacing(140)
 
-        w = self._fix_width.value()
-        h = self._fix_height.value()
-        dpi = 100
-        scale = self._fix_dpi_units.currentText()
+        l.setContentsMargins(0, 0, 0, 0)
+        l.addStretch(1)
 
-        ctx.set_image_size(*self.to_inches(w, h, dpi, scale))
+        w = QWidget()
+        w.setContentsMargins(0, 2, 0, 2)
+        w.setLayout(l)
+        return w
 
     def _create_user_value(self):
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
 
-        check_box = QCheckBox()
-        spin_box = QDoubleSpinBox()
-        spin_box.setDecimals(5)
-        spin_box.setSingleStep(0.01)
-        spin_box.setMinimum(-sys.float_info.max)
-        spin_box.setMaximum(sys.float_info.max)
-        spin_box.setDisabled(True)
-        check_box.toggled.connect(spin_box.setEnabled)
+    def _build_tree(self, tree_wdgt, tree_def, root):
+        parent, children = tree_def.items()[0]
 
-        layout.addWidget(check_box)
-        layout.addWidget(spin_box)
+        # empty label /parent is a special case: either inline with the previous, or skip
+        if parent == "":
+            if isinstance(children, QWidget):
+                item = root
+                tree_wdgt.setItemWidget(item, 1, children)
 
-        return check_box, spin_box, layout
+            elif isinstance(children, list):
+                for c in children:
+                    self._build_tree(tree_wdgt, c, root)
+
+        elif parent == "set_expanded":  # a configuration item for the current root
+            root.setExpanded(children)
+        else:
+            item = QTreeWidgetItem(root)
+            item.setText(0, parent)
+
+            if isinstance(children, list):
+                for c in children:
+                    self._build_tree(tree_wdgt, c, item)
+            else:
+                tree_wdgt.setItemWidget(item, 1, children)
 
     def add_empty_row(self, layout, legend=""):
         layout.addRow(legend, QLabel())
@@ -259,15 +229,18 @@ class SettingsWindow(QWidget):
 
         indexes = ctx.slice_data_source().indexes_for_direction(SliceDirection.inline).tolist()
         index = ctx.index_for_direction(SliceDirection.inline)
-        self._iline.update_view(indexes, index)
+        self._il_ctrl.update_view(indexes, index)
 
         indexes = ctx.slice_data_source().indexes_for_direction(SliceDirection.crossline).tolist()
         index = ctx.index_for_direction(SliceDirection.crossline)
-        self._xline.update_view(indexes, index)
+        self._xl_ctrl.update_view(indexes, index)
 
         indexes = ctx.slice_data_source().indexes_for_direction(SliceDirection.depth).tolist()
         index = ctx.index_for_direction(SliceDirection.depth)
-        self._sample.update_view(indexes, index)
+        self._depth_ctrl.update_view(indexes, index)
+
+    def _set_view_label(self, indicator_on):
+        self._view_label.setText("indicators {0}".format("on" if indicator_on else "off"))
 
     def _interpolation_changed(self, index):
         interpolation_name = str(self._interpolation_combo.itemText(index))
@@ -276,22 +249,23 @@ class SettingsWindow(QWidget):
     def _index_changed_fn(self, direction):
         def fn(value):
             self._context.update_index_for_direction(direction, value)
+
         return fn
 
-    def _user_value_changed(self):
-        min_value = None
-        max_value = None
-        if self._user_minimum_active.isChecked():
-            min_value = self._user_minimum_value.value()
-            self._user_maximum_value.setMinimum(min_value)
-        else:
-            self._user_maximum_value.setMinimum(-sys.float_info.max)
+    def sample_limits_changed(self, values):
+        self._context.set_user_values(*values)
 
-        if self._user_maximum_active.isChecked():
-            max_value = self._user_maximum_value.value()
-            self._user_minimum_value.setMaximum(max_value)
-        else:
-            self._user_minimum_value.setMaximum(sys.float_info.max)
+    def depth_limits_changed(self, values):
+        min, max = values
+        self._context.set_y_view_limits(SliceDirection.crossline, min, max)
+        self._context.set_y_view_limits(SliceDirection.inline, min, max)
 
-        self._context.set_user_values(min_value, max_value)
+    def iline_limits_changed(self, values):
+        min, max = values
+        self._context.set_x_view_limits(SliceDirection.crossline, min, max)
+        self._context.set_x_view_limits(SliceDirection.depth, min, max)
 
+    def xline_limits_changed(self, values):
+        min, max = values
+        self._context.set_x_view_limits(SliceDirection.inline, min, max)
+        self._context.set_y_view_limits(SliceDirection.depth, min, max)

@@ -2,7 +2,7 @@
 import sys
 
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QMainWindow, QApplication, QToolButton, QFileDialog
+from PyQt4.QtGui import QMainWindow, QApplication, QToolButton, QFileDialog, QIcon
 
 from segyviewlib import resource_icon, SegyViewWidget
 
@@ -17,6 +17,7 @@ class SegyViewer(QMainWindow):
         self._segy_view_widget = SegyViewWidget(filename, show_toolbar=True)
 
         self.setCentralWidget(self._segy_view_widget)
+        self.setWindowIcon(resource_icon("350px-SEGYIO.png"))
 
         toolbar = self._segy_view_widget.toolbar()
         open_button = QToolButton()

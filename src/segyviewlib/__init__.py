@@ -17,6 +17,11 @@ def resource_icon(name):
     return QIcon(resource_icon_path(name))
 
 
+from .arrayspinbox import ArraySpinBox
+from ._indexcontroller import IndexController
+from ._samplescalecontroller import SampleScaleController
+from ._plotexportsettingscontroller import PlotExportSettingsWidget
+
 from .colormapcombo import ColormapCombo
 from .layoutcombo import LayoutCombo
 from .layoutfigure import LayoutFigure
@@ -30,7 +35,7 @@ from .sliceviewwidget import SliceViewWidget
 from .settingswindow import SettingsWindow
 from .segyviewwidget import SegyViewWidget
 
-__version__ = '1.0.4'
+__version__ = '1.0.5'
 __copyright__ = 'Copyright 2016, Statoil ASA'
 __license__ = 'GNU Lesser General Public License version 3'
 __status__ = 'Production'

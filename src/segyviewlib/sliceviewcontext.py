@@ -4,12 +4,52 @@ from PyQt4.QtCore import pyqtSignal
 from segyviewlib import SliceModel, SliceDataSource, SliceDirection
 
 
+class ViewLimit(object):
+    def __init__(self):
+        self._min_xlim = None
+        self._max_xlim = None
+        self._min_ylim = None
+        self._max_ylim = None
+
+    @property
+    def max_xlim(self):
+        return self._max_xlim
+
+    @max_xlim.setter
+    def max_xlim(self, value):
+        self._max_xlim = value + 1  # setting the constraint to the index above to the max
+
+    @property
+    def min_xlim(self):
+        return self._min_xlim
+
+    @min_xlim.setter
+    def min_xlim(self, value):
+        self._min_xlim = value
+
+    @property
+    def min_ylim(self):
+        return self._min_ylim
+
+    @min_ylim.setter
+    def min_ylim(self, value):
+        self._min_ylim = value
+
+    @property
+    def max_ylim(self):
+        return self._max_ylim
+
+    @max_ylim.setter
+    def max_ylim(self, value):
+        self._max_ylim = value + 1  # setting the constraint to the index above to the max
+
+
 class SliceViewContext(QObject):
     context_changed = pyqtSignal()
     data_changed = pyqtSignal()
     data_source_changed = pyqtSignal()
 
-    def __init__(self, slice_models, slice_data_source, colormap='seismic', interpolation='nearest', image_size = None):
+    def __init__(self, slice_models, slice_data_source, colormap='seismic', interpolation='nearest', image_size=None):
         QObject.__init__(self)
 
         self._available_slice_models = slice_models
@@ -25,6 +65,11 @@ class SliceViewContext(QObject):
         self._global_max = None
         self._user_min_value = None
         self._user_max_value = None
+
+        self._view_limits = {}
+        for model in self._available_slice_models:
+            self._view_limits[model.index_direction['name']] = ViewLimit()
+
         self._interpolation = interpolation
         self._symmetric_scale = True
         self._image_size = image_size
@@ -87,6 +132,29 @@ class SliceViewContext(QObject):
         self._interpolation = str(interpolation_name)
         self.context_changed.emit()
 
+    def set_x_view_limits(self, index_direction, min_x, max_x):
+
+        slice_view_dir_ctxt = self._view_limits[index_direction['name']]
+
+        if max_x is not None:
+            slice_view_dir_ctxt.max_xlim = max_x
+
+        if min_x is not None:
+            slice_view_dir_ctxt.min_xlim = min_x
+
+        self.context_changed.emit()
+
+    def set_y_view_limits(self, index_direction, min_y, max_y):
+        view_limit = self._view_limits[index_direction['name']]
+
+        if max_y is not None:
+            view_limit.max_ylim = max_y
+
+        if min_y is not None:
+            view_limit.min_ylim = min_y
+
+        self.context_changed.emit()
+
     def set_user_values(self, min_value, max_value):
         dirty = False
         if self._user_min_value != min_value:
@@ -100,8 +168,9 @@ class SliceViewContext(QObject):
         if dirty:
             self.context_changed.emit()
 
-    def set_image_size(self, width, height = None, dpi = None):
+    def set_image_size(self, width, height=None, dpi=None):
         if width is None:
+            self._image_size = None
             return
 
         if height is None or dpi is None:
@@ -137,7 +206,8 @@ class SliceViewContext(QObject):
             "view_max": view_max,
             "min": vmin,
             "max": vmax,
-            "interpolation": self.interpolation
+            "interpolation": self.interpolation,
+            "view_limits": self._view_limits
         }
 
     def _assign_indexes(self):
@@ -191,6 +261,12 @@ class SliceViewContext(QObject):
     def slice_data_source(self):
         """ :rtype: SliceDataSource"""
         return self._slice_data_source
+
+    def model_for_direction(self, direction):
+        for m in self._available_slice_models:
+            if m.index_direction == direction:
+                return m
+        return None
 
     def index_for_direction(self, direction):
         for m in self._available_slice_models:

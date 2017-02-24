@@ -1,4 +1,5 @@
 set(RESOURCES
+    350px-SEGYIO.png
     cog.png
     folder.png
     layouts_four_grid.png
