@@ -71,6 +71,7 @@ class SliceDataSource(QObject):
                 self._close_current_file()
                 self._source = source
                 self._source.mmap()
+                samples = self._source.samples
         else:
             self._close_current_file()
             self._source = EmptyDataSource()
@@ -99,7 +100,7 @@ class SliceDataSource(QObject):
         elif direction == SliceDirection.crossline:
             return self._source.xlines
         elif direction == SliceDirection.depth:
-            return self._source.samples # add t0?
+            return self._source.samples
         else:
             raise ValueError("Unknown direction: %s" % direction)
 

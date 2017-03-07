@@ -1,9 +1,8 @@
 from matplotlib import patches
 from matplotlib.ticker import FuncFormatter, AutoLocator
 from matplotlib.image import AxesImage
-from .slicemodel import SliceModel
+from .slicemodel import SliceModel, SliceDirection
 import numpy as np
-
 
 class SliceView(object):
     def __init__(self, axes, model, interpolation="nearest", aspect="auto"):
@@ -82,6 +81,9 @@ class SliceView(object):
         self._image.set_interpolation(context['interpolation'])
         self._update_indicators(context)
         self._set_limits()
+
+        if self._model.index_direction is not SliceDirection.depth:
+            self._image.axes.set_ylabel(context['samples_unit'])
 
     def _update_indicators(self, context):
         """ :type context: dict """
