@@ -90,14 +90,14 @@ class SettingsWindow(QWidget):
              },
             {"Crossline": [{"set_expanded": True},
                            {"": self._align(self._xl_ctrl.current_index_label)},
-                           {"Inline:": self._align(self._xl_ctrl.index_widget)},
+                           {"Crossline:": self._align(self._xl_ctrl.index_widget)},
                            {"Minimum:": self._align(self._xl_ctrl.min_spinbox, self._xl_ctrl.min_checkbox)},
                            {"Maximum:": self._align(self._xl_ctrl.max_spinbox, self._xl_ctrl.max_checkbox)}
                            ]
              },
             {"Depth": [{"set_expanded": True},
                        {"": self._align(self._depth_ctrl.current_index_label)},
-                       {"Inline:": self._align(self._depth_ctrl.index_widget)},
+                       {"Depth:": self._align(self._depth_ctrl.index_widget)},
                        {"Minimum:": self._align(self._depth_ctrl.min_spinbox, self._depth_ctrl.min_checkbox)},
                        {"Maximum:": self._align(self._depth_ctrl.max_spinbox, self._depth_ctrl.max_checkbox)}
                        ]
