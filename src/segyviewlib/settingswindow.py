@@ -127,8 +127,8 @@ class SettingsWindow(QWidget):
         tre = QTreeWidget(self)
         tre.setHeaderHidden(True)
         tre.setColumnCount(2)
-        tre.setColumnWidth(0, 200)
-        tre.setColumnWidth(1, 140)
+        tre.setColumnWidth(0, 140)
+        tre.setColumnWidth(1, 180)
 
         self._build_tree(tre, tree_def, tre.invisibleRootItem())
 
@@ -148,7 +148,7 @@ class SettingsWindow(QWidget):
         vertical_layout.addLayout(button_layout, 0)
 
         self.setLayout(vertical_layout)
-        self.setMinimumSize(420, 720)
+        self.setMinimumSize(380, 720)
 
     @staticmethod
     def _align(widget, checkbox=None):
@@ -164,10 +164,10 @@ class SettingsWindow(QWidget):
         l.addStretch(0.5)
         if widget is not None:
             widget.setMinimumWidth(140)
-            widget.setMaximumWidth(140)
+            widget.setMaximumWidth(180)
             l.addWidget(widget)
         else:
-            l.addSpacing(140)
+            l.addSpacing(180)
 
         l.setContentsMargins(0, 0, 0, 0)
         l.addStretch(1)
