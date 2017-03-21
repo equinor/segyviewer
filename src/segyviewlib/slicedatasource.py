@@ -99,7 +99,7 @@ class SliceDataSource(QObject):
         elif direction == SliceDirection.crossline:
             return self._source.xlines
         elif direction == SliceDirection.depth:
-            return np.fromiter(range(self._source.samples), dtype=np.uintc)  # add t0?
+            return self._source.samples # add t0?
         else:
             raise ValueError("Unknown direction: %s" % direction)
 
@@ -110,5 +110,5 @@ class SliceDataSource(QObject):
         iline_count = len(self._source.ilines)
         xline_count = len(self._source.xlines)
         offset_count = 1
-        sample_count = self._source.samples
+        sample_count = len(self._source.samples)
         return iline_count, xline_count, offset_count, sample_count
