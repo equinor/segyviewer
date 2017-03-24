@@ -64,6 +64,10 @@ class SettingsWindow(QWidget):
         self._symmetric_scale = QCheckBox()
         self._symmetric_scale.toggled.connect(self._context.set_symmetric_scale)
 
+        self._samples_unit = QComboBox()
+        self._samples_unit.addItems(['Time (ms)', 'Depth (m)'])
+        self._samples_unit.currentIndexChanged[str].connect(self._context.samples_unit)
+
         # view
         self._view_label = QLabel("")
         self._view_label.setDisabled(True)
@@ -90,16 +94,17 @@ class SettingsWindow(QWidget):
              },
             {"Crossline": [{"set_expanded": True},
                            {"": self._align(self._xl_ctrl.current_index_label)},
-                           {"Inline:": self._align(self._xl_ctrl.index_widget)},
+                           {"Crossline:": self._align(self._xl_ctrl.index_widget)},
                            {"Minimum:": self._align(self._xl_ctrl.min_spinbox, self._xl_ctrl.min_checkbox)},
                            {"Maximum:": self._align(self._xl_ctrl.max_spinbox, self._xl_ctrl.max_checkbox)}
                            ]
              },
             {"Depth": [{"set_expanded": True},
                        {"": self._align(self._depth_ctrl.current_index_label)},
-                       {"Inline:": self._align(self._depth_ctrl.index_widget)},
+                       {"Depth:": self._align(self._depth_ctrl.index_widget)},
                        {"Minimum:": self._align(self._depth_ctrl.min_spinbox, self._depth_ctrl.min_checkbox)},
-                       {"Maximum:": self._align(self._depth_ctrl.max_spinbox, self._depth_ctrl.max_checkbox)}
+                       {"Maximum:": self._align(self._depth_ctrl.max_spinbox, self._depth_ctrl.max_checkbox)},
+                       {"Type": self._align(self._samples_unit)}
                        ]
              },
             {"Sample": [

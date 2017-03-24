@@ -65,6 +65,7 @@ class SliceViewContext(QObject):
         self._global_max = None
         self._user_min_value = None
         self._user_max_value = None
+        self._samples_unit = "Time (ms)"
 
         self._view_limits = {}
         for model in self._available_slice_models:
@@ -110,6 +111,10 @@ class SliceViewContext(QObject):
     def symmetric_scale(self):
         """ :rtype: bool """
         return self._symmetric_scale
+
+    def samples_unit(self, val):
+        self._samples_unit = val
+        self.context_changed.emit()
 
     @property
     def image_size(self):
@@ -207,7 +212,8 @@ class SliceViewContext(QObject):
             "min": vmin,
             "max": vmax,
             "interpolation": self.interpolation,
-            "view_limits": self._view_limits
+            "view_limits": self._view_limits,
+            "samples_unit": self._samples_unit,
         }
 
     def _assign_indexes(self):
