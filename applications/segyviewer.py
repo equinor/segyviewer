@@ -16,10 +16,13 @@ class SegyViewer(QMainWindow):
                                           if v is not None }
 
         self.setAttribute(Qt.WA_DeleteOnClose)
-        self.setWindowTitle("SEG-Y Viewer")
+
+        title = filename if filename is not None else "SEG-Y Viewer"
+        self.setWindowTitle(title)
 
         self._segy_view_widget = SegyViewWidget(filename, show_toolbar=True,
-                                                          segyioargs = self.segyioargs)
+                                                          segyioargs = self.segyioargs,
+                                                          parent = self)
 
         self.setCentralWidget(self._segy_view_widget)
         self.setWindowIcon(resource_icon("350px-SEGYIO.png"))
@@ -40,6 +43,7 @@ class SegyViewer(QMainWindow):
 
         if input_file:
             self._segy_view_widget.set_source_filename(input_file, **self.segyioargs)
+            self.setWindowTitle(input_file)
 
 
 def run(filename, il, xl):
