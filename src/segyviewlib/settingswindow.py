@@ -66,7 +66,7 @@ class SettingsWindow(QWidget):
 
         self._samples_unit = QComboBox()
         self._samples_unit.addItems(['Time (ms)', 'Depth (m)'])
-        self._samples_unit.currentIndexChanged[str].connect(self._context.samples_unit)
+        self._samples_unit.currentIndexChanged[str].connect(self.samples_unit)
 
         # view
         self._view_label = QLabel("")
@@ -182,6 +182,9 @@ class SettingsWindow(QWidget):
         w.setLayout(l)
         return w
 
+    def samples_unit(self, val):
+        self._context.samples_unit = val
+
     def _create_user_value(self):
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -243,6 +246,10 @@ class SettingsWindow(QWidget):
         indexes = ctx.slice_data_source().indexes_for_direction(SliceDirection.depth).tolist()
         index = ctx.index_for_direction(SliceDirection.depth)
         self._depth_ctrl.update_view(indexes, index)
+
+        index = self._samples_unit.findText(ctx.samples_unit)
+        if index != -1:
+            self._samples_unit.setCurrentIndex(index)
 
     def _set_view_label(self, indicator_on):
         self._view_label.setText("indicators {0}".format("on" if indicator_on else "off"))

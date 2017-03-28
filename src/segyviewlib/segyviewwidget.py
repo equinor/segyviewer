@@ -106,6 +106,9 @@ class SegyViewWidget(QWidget):
     def set_source_filename(self, filename):
         self._slice_data_source.set_source_filename(filename)
 
+    def as_depth(self):
+        self._context.samples_unit = 'Depth (m)'
+
     def _show_settings(self, toggled):
         self._settings_window.setVisible(toggled)
         if self._settings_window.isMinimized():

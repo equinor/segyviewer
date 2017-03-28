@@ -112,6 +112,11 @@ class SliceViewContext(QObject):
         """ :rtype: bool """
         return self._symmetric_scale
 
+    @property
+    def samples_unit(self):
+        return self._samples_unit
+
+    @samples_unit.setter
     def samples_unit(self, val):
         self._samples_unit = val
         self.context_changed.emit()
@@ -213,7 +218,7 @@ class SliceViewContext(QObject):
             "max": vmax,
             "interpolation": self.interpolation,
             "view_limits": self._view_limits,
-            "samples_unit": self._samples_unit,
+            "samples_unit": self.samples_unit,
         }
 
     def _assign_indexes(self):
