@@ -4,6 +4,7 @@ from matplotlib.image import AxesImage
 from .slicemodel import SliceModel, SliceDirection
 import numpy as np
 
+
 class SliceView(object):
     def __init__(self, axes, model, interpolation="nearest", aspect="auto"):
         super(SliceView, self).__init__()
@@ -26,10 +27,10 @@ class SliceView(object):
 
         self._view_limits = None
 
-        self._min_zoom_xlim = None
-        self._max_zoom_xlim = None
-        self._min_zoom_ylim = None
-        self._max_zoom_ylim = None
+        self._min_xlim = 0
+        self._max_xlim = model.width
+        self._min_ylim = 0
+        self._max_ylim = model.height
 
     def model(self):
         """ :rtype: SliceModel """
@@ -55,7 +56,7 @@ class SliceView(object):
         for label in (axes.get_xticklabels() + axes.get_yticklabels()):
             label.set_fontsize(9)
 
-        self._set_default_limits()
+        self._reset_zoom()
 
         axes.add_patch(self._vertical_indicator)
         axes.add_patch(self._horizontal_indicator)
@@ -80,7 +81,8 @@ class SliceView(object):
         self._image.set_clim(context['min'], context['max'])
         self._image.set_interpolation(context['interpolation'])
         self._update_indicators(context)
-        self._set_limits()
+
+        self._set_view_limits()
 
         if self._model.index_direction is not SliceDirection.depth:
             self._image.axes.set_ylabel(context['samples_unit'])
@@ -104,27 +106,29 @@ class SliceView(object):
         if model.y_index is not None and show_indicators:
             self._horizontal_indicator.set_y(model.y_index)
 
-    def _set_default_limits(self):
-        self._min_zoom_xlim = None
-        self._max_zoom_xlim = None
-        self._min_zoom_ylim = None
-        self._max_zoom_ylim = None
+    def _has_view_limits_changed(self):
+        return any([self._view_limits.min_xlim != self._min_xlim,
+                    self._view_limits.max_xlim != self._max_xlim,
+                    self._view_limits.min_ylim != self._min_ylim,
+                    self._view_limits.max_ylim != self._max_ylim])
 
-    def _set_limits(self):
-        model = self._model
-        axes = self._image.axes
+    def _set_view_limits(self, forced_reset=False):
 
-        if self._zoom_factor < 1:  # zoom (and or pan) has precedence over other limits, as long as enabled
-            axes.set_xlim(self._min_zoom_xlim, self._max_zoom_xlim)
-            axes.set_ylim(self._min_zoom_ylim, self._max_zoom_ylim)
-        elif self._view_limits is not None:
-            min_x = self._view_limits.min_xlim if self._view_limits.min_xlim is not None else 0
-            max_x = self._view_limits.max_xlim if self._view_limits.max_xlim is not None else model.width
-            axes.set_xlim(min_x, max_x)
+        if self._has_view_limits_changed() or forced_reset:
+            self._reset_zoom()
 
-            min_y = self._view_limits.min_ylim if self._view_limits.min_ylim is not None else 0
-            max_y = self._view_limits.max_ylim if self._view_limits.max_ylim is not None else model.height
-            axes.set_ylim(max_y, min_y)  # flipping since y axis is flipped
+            axes = self._image.axes
+
+            self._min_xlim = self._view_limits.min_xlim
+            self._max_xlim = self._view_limits.max_xlim
+            axes.set_xlim(self._min_xlim, self._max_xlim)
+
+            self._min_ylim = self._view_limits.min_ylim
+            self._max_ylim = self._view_limits.max_ylim
+            axes.set_ylim(self._max_ylim, self._min_ylim)  # flipping since y axis is flipped
+
+    def _reset_zoom(self):
+        self._zoom_factor = 1
 
     def zoom(self, x, y, zoom_factor_delta, reset_zoom=False):
         zoom_factor = self._zoom_factor + zoom_factor_delta
@@ -141,14 +145,14 @@ class SliceView(object):
         self._zoom_factor = zoom_factor
 
         if reset_zoom:
-            self._set_default_limits()
+            self._set_view_limits(forced_reset=True)
             return True
 
         model = self._model
         axes = self._image.axes
 
-        new_width = model.width * zoom_factor
-        new_height = model.height * zoom_factor
+        new_width = (self._max_xlim - self._min_xlim) * zoom_factor
+        new_height = (self._max_ylim - self._min_ylim) * zoom_factor
 
         cur_xlim = axes.get_xlim()
         cur_ylim = axes.get_ylim()
@@ -156,32 +160,32 @@ class SliceView(object):
         relx = (cur_xlim[1] - x) / (cur_xlim[1] - cur_xlim[0])
         rely = (cur_ylim[0] - y) / (cur_ylim[0] - cur_ylim[1])
 
-        self._min_zoom_xlim = max(0, x - new_width * (1 - relx))
-        self._max_zoom_xlim = min(model.width, x + new_width * relx)
+        min_zoom_xlim = max(max(0, x - new_width * (1 - relx)), self._min_xlim)
+        max_zoom_xlim = min(min(model.width, x + new_width * relx), self._max_xlim)
 
-        self._min_zoom_ylim = min(model.height, y + new_height * rely)
-        self._max_zoom_ylim = max(0, y - new_height * (1 - rely))
+        max_zoom_ylim = min(min(model.height, y + new_height * rely), self._max_ylim)
+        min_zoom_ylim = max(max(0, y - new_height * (1 - rely)), self._min_ylim)
+
+        axes.set_xlim(min_zoom_xlim, max_zoom_xlim)
+        axes.set_ylim(max_zoom_ylim, min_zoom_ylim)
         return True
 
     def pan(self, dx, dy):
         axes = self._image.axes
-        model = self._model
 
         xlim = axes.get_xlim()
 
-        if xlim[0] - dx < 0:
-            dx = xlim[0]
-        elif xlim[1] - dx > model.width:
-            dx = xlim[1] - model.width
+        if xlim[0] - dx < self._min_xlim:
+            dx = xlim[0] - self._min_xlim
+        elif xlim[1] - dx > self._max_xlim:
+            dx = xlim[1] - self._max_xlim
 
         ylim = axes.get_ylim()
 
-        if ylim[0] - dy > model.height:
-            dy = ylim[0] - model.height
-        elif ylim[1] - dy < 0:
-            dy = ylim[1]
+        if ylim[1] - dy < self._min_ylim:
+            dy = ylim[1] - self._min_ylim
+        elif ylim[0] - dy > self._max_ylim:
+            dy = ylim[0] - self._max_ylim
 
-        self._min_zoom_xlim = xlim[0] - dx
-        self._max_zoom_xlim = xlim[1] - dx
-        self._min_zoom_ylim = ylim[0] - dy
-        self._max_zoom_ylim = ylim[1] - dy
+        axes.set_xlim(xlim - dx)
+        axes.set_ylim(ylim - dy)
