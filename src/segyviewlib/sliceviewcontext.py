@@ -5,11 +5,11 @@ from segyviewlib import SliceModel, SliceDataSource, SliceDirection
 
 
 class ViewLimit(object):
-    def __init__(self):
-        self._min_xlim = None
-        self._max_xlim = None
-        self._min_ylim = None
-        self._max_ylim = None
+    def __init__(self, model):
+        self._min_xlim = 0
+        self._max_xlim = model.width
+        self._min_ylim = 0
+        self._max_ylim = model.height
 
     @property
     def max_xlim(self):
@@ -67,15 +67,15 @@ class SliceViewContext(QObject):
         self._user_max_value = None
         self._samples_unit = "Time (ms)"
 
-        self._view_limits = {}
-        for model in self._available_slice_models:
-            self._view_limits[model.index_direction['name']] = ViewLimit()
-
         self._interpolation = interpolation
         self._symmetric_scale = True
         self._image_size = image_size
 
         self._assign_indexes()
+
+        self._view_limits = {}
+        for model in self._available_slice_models:
+            self._view_limits[model.index_direction['name']] = ViewLimit(model)
 
     @property
     def models(self):
