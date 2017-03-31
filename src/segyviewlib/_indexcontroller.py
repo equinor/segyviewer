@@ -87,11 +87,15 @@ class IndexController(QObject):
         self._update_label()
         self._min_max_value_changed()
 
+    @staticmethod
+    def _to_lbl_txt(val):
+        return str(round(val, 4)) if isinstance(val, float) else str(val)
+
     def _update_label(self):
         self._current_index_label.setText(
-            "pos: {0} - [{1}:{2}]".format(str(self._indexes[self.current_index]),
-                                          str(self._indexes[self.min_index]),
-                                          str(self._indexes[self.max_index])))
+            "pos: {0} - [{1}:{2}]".format(self._to_lbl_txt(self._indexes[self.current_index]),
+                                          self._to_lbl_txt(self._indexes[self.min_index]),
+                                          self._to_lbl_txt(self._indexes[self.max_index])))
 
     def update_index(self, index):
         self.index_s_box.update_view(self._indexes, index)

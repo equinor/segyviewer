@@ -153,7 +153,7 @@ class SettingsWindow(QWidget):
         vertical_layout.addLayout(button_layout, 0)
 
         self.setLayout(vertical_layout)
-        self.setMinimumSize(380, 720)
+        self.setMinimumSize(390, 740)
 
     @staticmethod
     def _align(widget, checkbox=None):
@@ -168,7 +168,7 @@ class SettingsWindow(QWidget):
 
         l.addStretch(0.5)
         if widget is not None:
-            widget.setMinimumWidth(140)
+            widget.setMinimumWidth(180)
             widget.setMaximumWidth(180)
             l.addWidget(widget)
         else:

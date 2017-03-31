@@ -34,7 +34,10 @@ class ArraySpinBox(QSpinBox):
         return index
 
     def textFromValue(self, index):
-        return str(self._values[index])
+        val = self._values[index]
+        if isinstance(val, float):
+            val = round(val, 4)
+        return str(val)
 
     def validate(self, text, pos):
         text = str(text)
