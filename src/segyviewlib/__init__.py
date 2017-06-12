@@ -35,7 +35,7 @@ from .sliceviewwidget import SliceViewWidget
 from .settingswindow import SettingsWindow
 from .segyviewwidget import SegyViewWidget
 
-__version__ = '1.0.5'
+__version__ = '1.0.6'
 __copyright__ = 'Copyright 2016, Statoil ASA'
 __license__ = 'GNU Lesser General Public License version 3'
 __status__ = 'Production'
