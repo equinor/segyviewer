@@ -12,7 +12,7 @@ class PlotExportSettingsWidget(QWidget):
 
         self._dpi_units = ["in", "cm", "px"]
 
-        if parent is None:
+        if parent is None or self._slice_view_widget is None:
             w, h, dpi = 11.7, 8.3, 100
         else:
             fig = self._slice_view_widget.layout_figure()

@@ -1,12 +1,17 @@
 from __future__ import division
 from PyQt4.QtGui import QCheckBox, QWidget, QFormLayout, QComboBox, QLabel
 from PyQt4.QtGui import QPushButton, QHBoxLayout, QVBoxLayout, QTreeWidget, QTreeWidgetItem
-from PyQt4.QtCore import Qt, QObject
+from PyQt4.QtCore import Qt, QObject, pyqtSignal
 
 from segyviewlib import SliceDirection, SampleScaleController, IndexController, PlotExportSettingsWidget
 
 
 class SettingsWindow(QWidget):
+    min_max_changed = pyqtSignal(tuple, str)
+    indicators_changed = pyqtSignal(bool)
+    interpolation_changed = pyqtSignal(str)
+    samples_unit_changed = pyqtSignal(str)
+
     def __init__(self, context, parent=None):
         """
         :type context: segyviewlib.SliceViewContext
@@ -33,8 +38,10 @@ class SettingsWindow(QWidget):
         f_layout.addRow("Crossline Count:", self._xline_count)
         f_layout.addRow("Offset Count:", self._offset_count)
         f_layout.addRow("Sample Count:", self._sample_count)
-        f_layout.addRow("Minimum Value:", self._minimum_value)
-        f_layout.addRow("Maximum Value:", self._maximum_value)
+
+        if self._context._has_data:
+            f_layout.addRow("Minimum Value:", self._minimum_value)
+            f_layout.addRow("Maximum Value:", self._maximum_value)
 
         # iline
         self._il_ctrl = IndexController(parent=self,
@@ -72,7 +79,7 @@ class SettingsWindow(QWidget):
         self._view_label = QLabel("")
         self._view_label.setDisabled(True)
         self._indicator_visibility = QCheckBox()
-        self._indicator_visibility.toggled.connect(self._context.show_indicators)
+        self._indicator_visibility.toggled.connect(self._show_indicators)
         self._indicator_visibility.toggled.connect(lambda: self._set_view_label(self._indicator_visibility.isChecked()))
 
         self._interpolation_combo = QComboBox()
@@ -129,13 +136,13 @@ class SettingsWindow(QWidget):
         ]}
 
         # setup the menu/navigation tree widget
-        tre = QTreeWidget(self)
-        tre.setHeaderHidden(True)
-        tre.setColumnCount(2)
-        tre.setColumnWidth(0, 140)
-        tre.setColumnWidth(1, 180)
+        self._tree = QTreeWidget(self)
+        self._tree.setHeaderHidden(True)
+        self._tree.setColumnCount(2)
+        self._tree.setColumnWidth(0, 140)
+        self._tree.setColumnWidth(1, 180)
 
-        self._build_tree(tre, tree_def, tre.invisibleRootItem())
+        self._build_tree(self._tree, tree_def, self._tree.invisibleRootItem())
 
         # layout
         vertical_layout = QVBoxLayout()
@@ -148,12 +155,17 @@ class SettingsWindow(QWidget):
 
         vertical_layout.addLayout(f_layout, 0)
         vertical_layout.addStretch()
-        vertical_layout.addWidget(tre, 1)
+        vertical_layout.addWidget(self._tree, 1)
         vertical_layout.addStretch()
         vertical_layout.addLayout(button_layout, 0)
 
         self.setLayout(vertical_layout)
         self.setMinimumSize(390, 740)
+
+    @property
+    def qtree(self):
+        """ :rtype: QTreeWidget """
+        return self._tree
 
     @staticmethod
     def _align(widget, checkbox=None):
@@ -184,6 +196,7 @@ class SettingsWindow(QWidget):
 
     def samples_unit(self, val):
         self._context.samples_unit = val
+        self.samples_unit_changed.emit(val)
 
     def _create_user_value(self):
         layout = QHBoxLayout()
@@ -232,8 +245,9 @@ class SettingsWindow(QWidget):
         self._offset_count.setText("%d" % offsets)
         self._sample_count.setText("%d" % samples)
 
-        self._minimum_value.setText("%f" % ctx.global_minimum)
-        self._maximum_value.setText("%f" % ctx.global_maximum)
+        if ctx._has_data:
+            self._minimum_value.setText("%f" % ctx.global_minimum)
+            self._maximum_value.setText("%f" % ctx.global_maximum)
 
         indexes = ctx.slice_data_source().indexes_for_direction(SliceDirection.inline).tolist()
         index = ctx.index_for_direction(SliceDirection.inline)
@@ -254,9 +268,14 @@ class SettingsWindow(QWidget):
     def _set_view_label(self, indicator_on):
         self._view_label.setText("indicators {0}".format("on" if indicator_on else "off"))
 
+    def _show_indicators(self, visible):
+        self._context.show_indicators(visible)
+        self.indicators_changed.emit(visible)
+
     def _interpolation_changed(self, index):
         interpolation_name = str(self._interpolation_combo.itemText(index))
         self._context.set_interpolation(interpolation_name)
+        self.interpolation_changed.emit(interpolation_name)
 
     def _index_changed_fn(self, direction):
         def fn(value):
@@ -268,16 +287,25 @@ class SettingsWindow(QWidget):
         self._context.set_user_values(*values)
 
     def depth_limits_changed(self, values):
-        min, max = values
-        self._context.set_y_view_limits(SliceDirection.crossline, min, max)
-        self._context.set_y_view_limits(SliceDirection.inline, min, max)
+        if self._context.has_data:
+            min, max = values
+            self._context.set_y_view_limits(SliceDirection.crossline, min, max)
+            self._context.set_y_view_limits(SliceDirection.inline, min, max)
+        else:
+            self.min_max_changed.emit(values, 'depth')
 
     def iline_limits_changed(self, values):
-        min, max = values
-        self._context.set_x_view_limits(SliceDirection.crossline, min, max)
-        self._context.set_x_view_limits(SliceDirection.depth, min, max)
+        if self._context.has_data:
+            min, max = values
+            self._context.set_x_view_limits(SliceDirection.crossline, min, max)
+            self._context.set_x_view_limits(SliceDirection.depth, min, max)
+        else:
+            self.min_max_changed.emit(values, 'iline')
 
     def xline_limits_changed(self, values):
-        min, max = values
-        self._context.set_x_view_limits(SliceDirection.inline, min, max)
-        self._context.set_y_view_limits(SliceDirection.depth, min, max)
+        if self._context.has_data:
+            min, max = values
+            self._context.set_x_view_limits(SliceDirection.inline, min, max)
+            self._context.set_y_view_limits(SliceDirection.depth, min, max)
+        else:
+            self.min_max_changed.emit(values, 'xline')
