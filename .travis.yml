@@ -12,7 +12,7 @@ addons:
     packages:
       - libqt4-core
       - libqt4-gui
-      - python-pyqt4
+      - python-qt4
 
 matrix:
   fast_finish: true
