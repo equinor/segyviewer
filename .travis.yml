@@ -31,6 +31,8 @@ install:
         pypath=$prefix/lib/libpython$python.dylib;
         pylib="-DPYTHON_LIBRARY=$pypath";
     fi
+  - pip install --upgrade pip
+  - pip search pyqt4
 
 before_script:
   - pip install -r requirements.txt
