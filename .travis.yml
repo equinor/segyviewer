@@ -7,6 +7,9 @@ python:
 os:
   - linux
   - osx
+  
+virtualenv:
+  system_site_packages: true
 
 addons:
   apt:
