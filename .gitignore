@@ -1,1 +1,3 @@
 *.pyc
+src/segyviewlib/version.py
+build/*

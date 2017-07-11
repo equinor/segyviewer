@@ -33,7 +33,7 @@ from .settingswindow import SettingsWindow
 from .segyviewwidget import SegyViewWidget
 from .segywidgetcollection import SegyTabWidget
 
-from .version import __version__
+from .version import version as __version__
 
 __copyright__ = 'Copyright 2016, Statoil ASA'
 __license__ = 'GNU Lesser General Public License version 3'
