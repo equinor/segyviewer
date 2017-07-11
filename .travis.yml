@@ -13,7 +13,8 @@ os:
 addons:
   apt:
     packages:
-      - libqt4
+      - libqt4-core
+      - libqt4-gui
 
 matrix:
   fast_finish: true
