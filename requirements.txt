@@ -1,3 +1,4 @@
 segyio
 numpy
 matplotlib
+PyQt4

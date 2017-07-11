@@ -1,34 +1,38 @@
-language: generic
+language: python
 
-env:
-  - PYTHON=2.7
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
 
 os:
   - linux
   - osx
 
+addons:
+  apt:
+    packages:
+      - libqt4
+
+matrix:
+  fast_finish: true
+  exclude:
+    - os: osx
+  include:
+    - os: osx
+      language: generic
+      python: "2.7"
+
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]];then
+        prefix=`python-config --prefix`;
+        pypath=$prefix/lib/libpython$python.dylib;
+        pylib="-DPYTHON_LIBRARY=$pypath";
+    fi
+
 before_script:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      export CONDA_OS=MacOSX;
-    else
-      export CONDA_OS=Linux;
-    fi
-  - if [[ "$PYTHON" == "2.7" ]]; then
-        wget https://repo.continuum.io/miniconda/Miniconda2-latest-${CONDA_OS}-x86_64.sh -O miniconda.sh;
-    else
-        wget https://repo.continuum.io/miniconda/Miniconda3-latest-${CONDA_OS}-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  - conda info -a
-
-  - conda install pyqt=4
-
   - pip install -r requirements.txt
-
   - python setup.py install
 
 script: python setup.py test
