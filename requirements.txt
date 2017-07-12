@@ -2,3 +2,4 @@ segyio
 numpy
 matplotlib
 pytest
+pytest-runner
