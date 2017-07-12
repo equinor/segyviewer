@@ -2,7 +2,7 @@ language: python
 dist: trusty
 
 python:
-  - "2.7_with_system_site_packages"
+  - "2.7"
 
 os:
   - linux
