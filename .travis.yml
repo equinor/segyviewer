@@ -2,7 +2,7 @@ language: python
 dist: trusty
 
 python:
-  - "2.7"
+  - "2.7_with_system_site_packages"
 
 os:
   - linux
@@ -27,10 +27,10 @@ matrix:
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]];then
         prefix=`python-config --prefix`;
-        pypath=$prefix/lib/libpython$python.dylib;
+        pypath=$prefix/lib/libpython$TRAVIS_PYTHON_VERSION.dylib;
         pylib="-DPYTHON_LIBRARY=$pypath";
     fi
-  - pip install --upgrade pip unittest2
+  - pip install --upgrade pip
   - export PATH=/usr/bin:$PATH
 
 before_script:
