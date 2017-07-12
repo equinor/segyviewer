@@ -34,6 +34,7 @@ install:
         pylib="-DPYTHON_LIBRARY=$pypath";
     fi
   - pip install --upgrade pip
+  - export PATH=/usr/bin:$PATH
 
 before_script:
   - pip install -r requirements.txt
