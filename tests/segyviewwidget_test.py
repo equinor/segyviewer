@@ -5,7 +5,7 @@ from segyviewlib import resource_icon_path
 
 class TestSegyView(TestCase):
     def setUp(self):
-        self.filename = "test-data/small.sgy"
+        self.filename = "testdata/small.sgy"
 
     def test_resources(self):
         icons = ['cog.png',

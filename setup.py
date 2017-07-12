@@ -25,7 +25,7 @@ setup(name='segyviewlib',
       author_email='ert@statoil.com',
       url='https://github.com/Statoil/segyviewer',
       packages=['segyviewlib'],
-      package_dir={'segyviewlib': 'src/segyviewlib'},
+      package_dir={'': 'src'},
       package_data={'':
                         ['LICENSE',
                          'README.md',
