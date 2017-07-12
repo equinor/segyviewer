@@ -35,6 +35,7 @@ install:
 
 before_script:
   - pip install -r requirements.txt
+  - pip install -e ".[test]"
   - python setup.py build
 
 script: python setup.py test
