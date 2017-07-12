@@ -8,6 +8,9 @@ os:
   - linux
   - osx
 
+virtualenv:
+    system_site_packages: true
+
 addons:
   apt:
     packages:
@@ -35,7 +38,6 @@ install:
 
 before_script:
   - pip install -r requirements.txt
-  - pip install -e ".[test]"
   - python setup.py build
 
 script: python setup.py test
