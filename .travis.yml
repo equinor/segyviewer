@@ -34,6 +34,7 @@ install:
 
 before_script:
   - pip install -r requirements.txt
-  - find /home/travis/virtualenv/python2.7_with_system_site_packages/lib/python2.7
+  - find /home/travis/virtualenv/python2.7_with_system_site_packages
+  - find /usr/lib/python2.7
 
 script: python setup.py bdist_wheel test
