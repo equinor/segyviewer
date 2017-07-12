@@ -8,9 +8,6 @@ os:
   - linux
   - osx
 
-env:
-  distpath: /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages
-
 addons:
   apt:
     packages:
@@ -38,7 +35,7 @@ install:
 before_script:
   - pip install -r requirements.txt
   - pip install -e .
-  - export PYTHONPATH=$PYTHONPATH:$distpath
+  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages
   - echo $PYTHONPATH
 
 script: python setup.py test
