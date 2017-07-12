@@ -8,6 +8,9 @@ os:
   - linux
   - osx
 
+env:
+  distpath: /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages
+
 addons:
   apt:
     packages:
@@ -34,7 +37,7 @@ install:
 
 before_script:
   - pip install -r requirements.txt
-  - find /home/travis/virtualenv/python2.7_with_system_site_packages
-  - find /usr/lib/python2.7
+  - pip install -e .
+  - export PYTHONPATH=$PYTHONPATH:$distpath
 
 script: python setup.py test
