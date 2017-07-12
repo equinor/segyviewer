@@ -30,7 +30,7 @@ install:
         pypath=$prefix/lib/libpython$python.dylib;
         pylib="-DPYTHON_LIBRARY=$pypath";
     fi
-  - pip install --upgrade pip
+  - pip install --upgrade pip unittest2
   - export PATH=/usr/bin:$PATH
 
 before_script:
