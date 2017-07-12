@@ -2,7 +2,7 @@ language: python
 dist: trusty
 
 python:
-  - "2.7"
+  - "2.7_with_system_site_packages"
 
 os:
   - linux
@@ -31,11 +31,8 @@ install:
         pylib="-DPYTHON_LIBRARY=$pypath";
     fi
   - pip install --upgrade pip
-
-before_script:
   - pip install -r requirements.txt
-  - pip install -e .
-  - cp -r /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PyQt4 lib/python$TRAVIS_PYTHON_VERSION/site-packages/
-  - echo $PYTHONPATH
+  - python setup.py develop
 
-script: python setup.py test
+script:
+  - python setup.py test
