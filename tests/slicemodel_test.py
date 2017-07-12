@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest2 import TestCase
 
 from segyviewlib import SliceModel, SliceDirection as SD
 import numpy as np

@@ -1,5 +1,5 @@
 import os
-from unittest import TestCase
+from unittest2 import TestCase
 from segyviewlib import resource_icon_path
 
 
