@@ -32,10 +32,10 @@ install:
     fi
   - pip uninstall -y pytest
   - pip install --upgrade pip unittest2
-  - pip install -e .
 
 before_script:
   - pip install -r requirements.txt
   - python setup.py build
+  - pip install -e .
 
 script: python setup.py test
