@@ -2,7 +2,7 @@ language: python
 dist: trusty
 
 python:
-  - "2.7_with_system_site_packages"
+  - "2.7"
 
 os:
   - linux
@@ -25,10 +25,16 @@ matrix:
       python: "2.7"
 
 install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]];then
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         prefix=`python-config --prefix`;
         pypath=$prefix/lib/libpython$TRAVIS_PYTHON_VERSION.dylib;
         pylib="-DPYTHON_LIBRARY=$pypath";
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PyQt4
+              $VIRTUAL_ENV/lib/python2.7/site-packages;
+        ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/sip*
+              $VIRTUAL_ENV/lib/python2.7/site-packages;
     fi
   - pip install --upgrade pip
   - pip install -r requirements.txt
