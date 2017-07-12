@@ -35,7 +35,7 @@ install:
 before_script:
   - pip install -r requirements.txt
   - pip install -e .
-  - cp -r /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PyQt4 usr/lib/python$TRAVIS_PYTHON_VERSION/site-packages/
+  - cp -r /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PyQt4 lib/python$TRAVIS_PYTHON_VERSION/site-packages/
   - echo $PYTHONPATH
 
 script: python setup.py test
