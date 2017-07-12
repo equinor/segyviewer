@@ -30,6 +30,7 @@ install:
         pypath=$prefix/lib/libpython$TRAVIS_PYTHON_VERSION.dylib;
         pylib="-DPYTHON_LIBRARY=$pypath";
     fi
+  - pip uninstall -y pytest
   - pip install --upgrade pip unittest2
 
 before_script:
