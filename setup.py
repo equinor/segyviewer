@@ -48,7 +48,6 @@ setup(name='segyviewlib',
       scripts=['applications/segyviewer', 'applications/segyviewer'],
       license='LGPL-3.0',
       platforms='any',
-      install_requires=['segyio'],
       test_suite='tests',
       classifiers=[
           'Development Status :: 5 - Production/Stable',
