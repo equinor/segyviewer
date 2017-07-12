@@ -1,4 +1,4 @@
 segyio
 numpy
 matplotlib
-unittest2
+pytest
