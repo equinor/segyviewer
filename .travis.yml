@@ -34,7 +34,8 @@ install:
 
 before_script:
   - pip install -r requirements.txt
-  - python setup.py install
+  - python setup.py bdist_wheel
+  - pip install dist/*.whl
 
 
 script: python setup.py test
