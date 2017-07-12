@@ -50,7 +50,6 @@ setup(name='segyviewlib',
       platforms='any',
       setup_requires=['pytest-runner'],
       tests_require=['pytest'],
-      requires=['segyio', 'matplotlib'],
       install_requires=['segyio', 'matplotlib'],
       classifiers=[
           'Development Status :: 5 - Production/Stable',
