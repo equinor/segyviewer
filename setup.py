@@ -24,6 +24,7 @@ setup(name='segyviewlib',
       author='Statoil ASA',
       author_email='ert@statoil.com',
       url='https://github.com/Statoil/segyviewer',
+      install_requires=['segyio', 'matplotlib', 'numpy'],
       packages=['segyviewlib'],
       package_dir={'': 'src'},
       package_data={'':
