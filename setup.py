@@ -23,6 +23,7 @@ setup(name='segyviewlib',
       author_email='fg_gpl@statoil.com',
       url='https://github.com/Statoil/segyviewer',
       install_requires=requires,
+      setup_requires=['setuptools_scm'],
       packages=['segyviewlib'],
       test_suite='tests',
       package_dir={'': 'src'},
@@ -62,7 +63,6 @@ setup(name='segyviewlib',
           'Topic :: Utilities'
       ]
       )
-#version = get_version(root='../src/segyviewlib', relative_to=__file__)
 setup(name='segyviewer',
       use_scm_version=True,
       description='Simple viewer for SEG-Y files',
@@ -73,7 +73,6 @@ setup(name='segyviewer',
       install_requires=['segyviewlib'],
       setup_requires=['setuptools_scm'],
       scripts=['applications/segyviewer'],
-      package_data={'': ['src/segyviewlib/version.py']},
       license='LGPL-3.0',
       platforms='any',
       classifiers=[
