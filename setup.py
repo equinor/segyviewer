@@ -76,6 +76,7 @@ setup(name='segyviewer',
       url='https://github.com/Statoil/segyviewer',
       install_requires=['segyviewlib'],
       scripts=['applications/segyviewer'],
+      package_data={'': ['src/segyviewlib/version.py'],
       license='LGPL-3.0',
       platforms='any',
       classifiers=[

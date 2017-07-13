@@ -48,7 +48,6 @@ script:
 
 deploy:
   - provider: pypi
-    skip_upload_docs: true
     user: statoil-travis
     distributions: bdist_wheel sdist
     on:
