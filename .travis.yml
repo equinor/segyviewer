@@ -26,6 +26,7 @@ matrix:
 
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+        brew update && brew install pyqt;
         prefix=`python-config --prefix`;
         pypath=$prefix/lib/libpython$TRAVIS_PYTHON_VERSION.dylib;
         pylib="-DPYTHON_LIBRARY=$pypath";
