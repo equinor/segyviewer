@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from setuptools import setup
+import setuptools_scm
 
 long_description = """
 =======
@@ -14,6 +15,10 @@ files. It uses the segyio library for reading files.
 """
 
 requires = map(str.rstrip, open('requirements.txt').readlines())
+# writing version.py dirties the directory, and makes setuptools_scm consider
+# this a "-dev" version. Cache the version before version.py is written and
+# use that directly in segyviewer
+viewer_version = setuptools_scm.get_version()
 
 setup(name='segyviewlib',
       use_scm_version={'write_to': 'src/segyviewlib/version.py'},
@@ -64,14 +69,13 @@ setup(name='segyviewlib',
       ]
       )
 setup(name='segyviewer',
-      use_scm_version=True,
+      version=viewer_version,
       description='Simple viewer for SEG-Y files',
       long_description=long_description,
       author='Statoil ASA',
       author_email='fg_gpl@statoil.com',
       url='https://github.com/Statoil/segyviewer',
       install_requires=['segyviewlib'],
-      setup_requires=['setuptools_scm'],
       scripts=['applications/segyviewer'],
       license='LGPL-3.0',
       platforms='any',
