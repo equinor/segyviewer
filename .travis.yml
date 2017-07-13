@@ -45,3 +45,11 @@ install:
 
 script:
   - python setup.py test
+
+deploy:
+    - provider: pypi
+      skip_upload_docs: true
+      user: statoil-travis
+      distributions: bdist_wheel sdist
+      password:
+        secure: Yy4V9djnr+tG/VXLXc1EkLuALxgpSURS8TQKm/8D5bmm83Xxry7ocy7WX0vQcsAW58zZ5DTFJzkwvhzlGPr+YPvioIQ5nr/fI0BHrQglZxYZsglJWHL/g0AnWM2olkSKQM8lUXyD+B8BfzSnM0Jt5S8A7EXuiFMcQbTjOLegCXyJAykAcdnXBWi5TO+Y57e4XovQmVh/t7iLOw//ZuLzVmcbKsUALrEZkH+xlXs7TfgwDx9aCS4yTL69lDs7palqy+dqybZY0qlFk6KwJvJOJXR9PzKhX+IPpBf6gquCaC6/4iSlyBLegDieZLfkCeSH7mYj2ewff9ieXUlaO+mdnpPnjKQ5ricsrnUw462RgpPbqQyRQb9u2a4FoklFc0ukzYV6ozO6IiuCNWI/VLetnMJj0tQNRjpYJGlp0vrm50gIX08h0M8MHSEnXms7Q4RDu1l8rj96p2UF/Ha8EtfJ1MoE+RKU/ua2DdPswzp6bcjjw5NiVGKB5ntupTZkVlrWVUh9ClQ8NqAQK0vxGzrPaC2fwzfBT7Gs8s1NxM+3inVP2K3pOcYs5u5vSJ5tPo6bgoK159IByQBEp+fug8TXWbbF+LSPg77mFjRacTpkqSmJSRNNXKOcbtVjq7w0M1FXxVgew1/iCdbKqxpKiwAyDlx8989KtM1bl2SOUbP39C4=
