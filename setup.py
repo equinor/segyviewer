@@ -13,14 +13,10 @@ files. It uses the segyio library for reading files.
 
 """
 
-version = {}
-with open('src/segyviewlib/version.py') as f:
-    exec(f.read(), version)
-
 requires = map(str.rstrip, open('requirements.txt').readlines())
 
 setup(name='segyviewlib',
-      version=version['__version__'],
+      use_scm_version={ 'write_to': 'src/segyviewlib/version.py'},
       description='Simple viewer library for SEG-Y files',
       long_description=long_description,
       author='Statoil ASA',
@@ -66,15 +62,16 @@ setup(name='segyviewlib',
           'Topic :: Utilities'
       ]
       )
-
+#version = get_version(root='../src/segyviewlib', relative_to=__file__)
 setup(name='segyviewer',
-      version=version['__version__'],
+      use_scm_version=True,
       description='Simple viewer for SEG-Y files',
       long_description=long_description,
       author='Statoil ASA',
       author_email='fg_gpl@statoil.com',
       url='https://github.com/Statoil/segyviewer',
       install_requires=['segyviewlib'],
+      setup_requires=['setuptools_scm'],
       scripts=['applications/segyviewer'],
       package_data={'': ['src/segyviewlib/version.py']},
       license='LGPL-3.0',
