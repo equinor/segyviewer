@@ -16,7 +16,7 @@ files. It uses the segyio library for reading files.
 requires = map(str.rstrip, open('requirements.txt').readlines())
 
 setup(name='segyviewlib',
-      use_scm_version=True,
+      use_scm_version={'write_to': 'version.py'},
       description='Simple viewer library for SEG-Y files',
       long_description=long_description,
       author='Statoil ASA',
