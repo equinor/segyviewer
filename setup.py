@@ -17,15 +17,18 @@ version = {}
 with open('src/segyviewlib/version.py') as f:
     exec(f.read(), version)
 
+requires = map(str.rstrip, open('requirements.txt').readlines())
+
 setup(name='segyviewlib',
       version=version['__version__'],
-      description='Simple viewer for SEG-Y files',
+      description='Simple viewer library for SEG-Y files',
       long_description=long_description,
       author='Statoil ASA',
-      author_email='ert@statoil.com',
+      author_email='fg_gpl@statoil.com',
       url='https://github.com/Statoil/segyviewer',
-      install_requires=['segyio', 'matplotlib', 'numpy'],
+      install_requires=requires,
       packages=['segyviewlib'],
+      test_suite='tests',
       package_dir={'': 'src'},
       package_data={'':
                         ['LICENSE',
@@ -46,10 +49,8 @@ setup(name='segyviewlib',
                          'resources/img/table_export.png',
                          'resources/img/readme.txt'
                          ]},
-      scripts=['applications/segyviewer', 'applications/segyviewer'],
       license='LGPL-3.0',
       platforms='any',
-      test_suite='tests',
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Environment :: Other Environment',
@@ -59,8 +60,33 @@ setup(name='segyviewlib',
           'Natural Language :: English',
           'Programming Language :: Python',
           'Programming Language :: Python :: 2.7',
-          'Programming Language :: Python :: 3.5',
-          'Programming Language :: Python :: 3.6',
+          'Topic :: Scientific/Engineering',
+          'Topic :: Scientific/Engineering :: Physics',
+          'Topic :: Software Development :: Libraries',
+          'Topic :: Utilities'
+      ]
+      )
+
+setup(name='segyviewer',
+      version=version['__version__'],
+      description='Simple viewer for SEG-Y files',
+      long_description=long_description,
+      author='Statoil ASA',
+      author_email='fg_gpl@statoil.com',
+      url='https://github.com/Statoil/segyviewer',
+      install_requires=['segyviewlib'],
+      scripts=['applications/segyviewer'],
+      license='LGPL-3.0',
+      platforms='any',
+      classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'Environment :: Other Environment',
+          'Intended Audience :: Developers',
+          'Intended Audience :: Science/Research',
+          'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
+          'Natural Language :: English',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 2.7',
           'Topic :: Scientific/Engineering',
           'Topic :: Scientific/Engineering :: Physics',
           'Topic :: Software Development :: Libraries',
