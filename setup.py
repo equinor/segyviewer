@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from setuptools import setup
-import setuptools_scm
 
 long_description = """
 =======
@@ -15,10 +14,34 @@ files. It uses the segyio library for reading files.
 """
 
 requires = map(str.rstrip, open('requirements.txt').readlines())
-# writing version.py dirties the directory, and makes setuptools_scm consider
-# this a "-dev" version. Cache the version before version.py is written and
-# use that directly in segyviewer
-viewer_version = setuptools_scm.get_version()
+
+setup(name='segyviewer',
+      use_scm_version=True,
+      description='Simple viewer for SEG-Y files',
+      long_description=long_description,
+      author='Statoil ASA',
+      author_email='fg_gpl@statoil.com',
+      url='https://github.com/Statoil/segyviewer',
+      install_requires=['segyviewlib'],
+      setup_requires=['setuptools_scm'],
+      scripts=['applications/segyviewer'],
+      license='LGPL-3.0',
+      platforms='any',
+      classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'Environment :: Other Environment',
+          'Intended Audience :: Developers',
+          'Intended Audience :: Science/Research',
+          'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
+          'Natural Language :: English',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 2.7',
+          'Topic :: Scientific/Engineering',
+          'Topic :: Scientific/Engineering :: Physics',
+          'Topic :: Software Development :: Libraries',
+          'Topic :: Utilities'
+      ]
+      )
 
 setup(name='segyviewlib',
       use_scm_version={'write_to': 'src/segyviewlib/version.py'},
@@ -51,32 +74,6 @@ setup(name='segyviewlib',
                          'resources/img/table_export.png',
                          'resources/img/readme.txt'
                          ]},
-      license='LGPL-3.0',
-      platforms='any',
-      classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'Environment :: Other Environment',
-          'Intended Audience :: Developers',
-          'Intended Audience :: Science/Research',
-          'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
-          'Natural Language :: English',
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 2.7',
-          'Topic :: Scientific/Engineering',
-          'Topic :: Scientific/Engineering :: Physics',
-          'Topic :: Software Development :: Libraries',
-          'Topic :: Utilities'
-      ]
-      )
-setup(name='segyviewer',
-      version=viewer_version,
-      description='Simple viewer for SEG-Y files',
-      long_description=long_description,
-      author='Statoil ASA',
-      author_email='fg_gpl@statoil.com',
-      url='https://github.com/Statoil/segyviewer',
-      install_requires=['segyviewlib'],
-      scripts=['applications/segyviewer'],
       license='LGPL-3.0',
       platforms='any',
       classifiers=[
