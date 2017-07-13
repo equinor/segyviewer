@@ -41,7 +41,7 @@ install:
             $VIRTUAL_ENV/lib/python2.7/site-packages;
       ln -s /Library/Python/$TRAVIS_PYTHON_VERSION/site-packages/sip*
             $VIRTUAL_ENV/lib/python2.7/site-packages;
-  fi
+    fi
   - pip install --upgrade pip
   - pip install -r requirements.txt
   - python setup.py develop
