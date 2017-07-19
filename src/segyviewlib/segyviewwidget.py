@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QFileDialog, QToolButton, QToolBar, QVBoxLayout, QWidget
+from PyQt4.QtGui import QFileDialog, QToolButton, QToolBar, QVBoxLayout, QWidget, QWidgetAction
 
 from segyviewlib import ColormapCombo, LayoutCombo, SettingsWindow, SliceViewContext
 from segyviewlib import SliceDataSource, SliceModel, SliceDirection as SD, SliceViewWidget, resource_icon
@@ -6,8 +6,8 @@ from segyviewlib import SliceDataSource, SliceModel, SliceDirection as SD, Slice
 
 class SegyViewWidget(QWidget):
     def __init__(self, filename, show_toolbar=True, color_maps=None,
-                                 width=11.7, height=8.3, dpi=100,
-                                 segyioargs = {}, parent=None):
+                 width=11.7, height=8.3, dpi=100,
+                 segyioargs={}, parent=None):
         QWidget.__init__(self, parent)
 
         inline = SliceModel("Inline", SD.inline, SD.crossline, SD.depth)
@@ -34,29 +34,52 @@ class SegyViewWidget(QWidget):
 
         self.setLayout(layout)
 
+    @property
+    def context(self):
+        """ :rtype: SliceViewContext"""
+        return self._context
+
+    @property
+    def slice_data_source(self):
+        """ :rtype: SliceDataSource"""
+        return self._slice_data_source
+
+    @property
     def toolbar(self):
         """ :rtype: QToolBar """
         return self._toolbar
+
+    @property
+    def slice_view_widget(self):
+        """ :rtype: SliceViewWidget """
+        return self._slice_view_widget
+
+    @property
+    def settings_window(self):
+        """ :rtype: QWidget """
+        return self._settings_window
 
     def _create_toolbar(self, color_maps):
         toolbar = QToolBar()
         toolbar.setFloatable(False)
         toolbar.setMovable(False)
 
-        self.layout_combo = LayoutCombo()
-        toolbar.addWidget(self.layout_combo)
-        self.layout_combo.layout_changed.connect(self._slice_view_widget.set_plot_layout)
+        self._layout_combo = LayoutCombo()
+        self._layout_combo_action = QWidgetAction(self._layout_combo)
+        self._layout_combo_action.setDefaultWidget(self._layout_combo)
+        toolbar.addAction(self._layout_combo_action)
+        self._layout_combo.layout_changed.connect(self._slice_view_widget.set_plot_layout)
 
         # self._colormap_combo = ColormapCombo(['seismic', 'spectral', 'RdGy', 'hot', 'jet', 'gray'])
         self._colormap_combo = ColormapCombo(color_maps)
         self._colormap_combo.currentIndexChanged[int].connect(self._colormap_changed)
         toolbar.addWidget(self._colormap_combo)
 
-        save_button = QToolButton()
-        save_button.setToolTip("Save as image")
-        save_button.setIcon(resource_icon("table_export.png"))
-        save_button.clicked.connect(self._save_figure)
-        toolbar.addWidget(save_button)
+        self._save_button = QToolButton()
+        self._save_button.setToolTip("Save as image")
+        self._save_button.setIcon(resource_icon("table_export.png"))
+        self._save_button.clicked.connect(self._save_figure)
+        toolbar.addWidget(self._save_button)
 
         self._settings_button = QToolButton()
         self._settings_button.setToolTip("Toggle settings visibility")
@@ -98,7 +121,7 @@ class SegyViewWidget(QWidget):
             fig = self._slice_view_widget
         else:
             w, h, dpi = image_size
-            fig = SliceViewWidget(self._context, width = w, height = h, dpi = dpi)
+            fig = SliceViewWidget(self._context, width=w, height=h, dpi=dpi)
             fig.set_plot_layout(self._slice_view_widget.layout_figure().current_layout())
 
         fig.layout_figure().savefig(output_file)
@@ -109,9 +132,9 @@ class SegyViewWidget(QWidget):
     def set_default_layout(self):
         # default slice view layout depends on the file size
         if self._slice_data_source.file_size < 8 * 10 ** 8:
-            self.layout_combo.setCurrentIndex(self.layout_combo.DEFAULT_SMALL_FILE_LAYOUT)
+            self._layout_combo.setCurrentIndex(self._layout_combo.DEFAULT_SMALL_FILE_LAYOUT)
         else:
-            self.layout_combo.setCurrentIndex(self.layout_combo.DEFAULT_LARGE_FILE_LAYOUT)
+            self._layout_combo.setCurrentIndex(self._layout_combo.DEFAULT_LARGE_FILE_LAYOUT)
 
     def as_depth(self):
         self._context.samples_unit = 'Depth (m)'
@@ -120,3 +143,10 @@ class SegyViewWidget(QWidget):
         self._settings_window.setVisible(toggled)
         if self._settings_window.isMinimized():
             self._settings_window.showNormal()
+
+    def show_toolbar(self, toolbar, layout_combo=True, colormap=True, save=True, settings=True):
+        self._toolbar.setVisible(toolbar)
+        self._colormap_combo.setDisabled(not colormap)
+        self._save_button.setDisabled(not save)
+        self._settings_button.setDisabled(not settings)
+        self._layout_combo_action.setVisible(layout_combo)

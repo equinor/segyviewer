@@ -24,7 +24,8 @@ class Keys(object):
     __nonzero__ = __bool__
 
     def __str__(self):
-        return "%s ctrl: %s shift: %s alt: %s super: %s self: %s" % (self.key, self.ctrl, self.shift, self.alt, self.super, bool(self))
+        x = (self.key, self.ctrl, self.shift, self.alt, self.super, bool(self))
+        return "%s ctrl: %s shift: %s alt: %s super: %s self: %s" % x
 
 
 class LayoutCanvas(FigureCanvas):
@@ -124,6 +125,9 @@ class LayoutCanvas(FigureCanvas):
         self._figure.set_plot_layout(layout_spec)
         self.layout_changed.emit()
         self.draw()
+
+    def current_layout(self):
+        return self._figure.current_layout()
 
     def layout_figure(self):
         """ :rtype: LayoutFigure """

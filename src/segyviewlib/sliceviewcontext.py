@@ -46,10 +46,11 @@ class ViewLimit(object):
 
 class SliceViewContext(QObject):
     context_changed = pyqtSignal()
-    data_changed = pyqtSignal()
+    data_changed = pyqtSignal(object)
     data_source_changed = pyqtSignal()
 
-    def __init__(self, slice_models, slice_data_source, colormap='seismic', interpolation='nearest', image_size=None):
+    def __init__(self, slice_models=[], slice_data_source=None, colormap='seismic', interpolation='nearest',
+                 image_size=None, has_data=True):
         QObject.__init__(self)
 
         self._available_slice_models = slice_models
@@ -71,11 +72,14 @@ class SliceViewContext(QObject):
         self._symmetric_scale = True
         self._image_size = image_size
 
-        self._assign_indexes()
-
+        self._has_data = has_data
         self._view_limits = {}
-        for model in self._available_slice_models:
-            self._view_limits[model.index_direction['name']] = ViewLimit(model)
+
+        if self._has_data:
+            self._assign_indexes()
+
+            for model in self._available_slice_models:
+                self._view_limits[model.index_direction['name']] = ViewLimit(model)
 
     @property
     def models(self):
@@ -125,6 +129,17 @@ class SliceViewContext(QObject):
     def image_size(self):
         """ :rtype: None | Tuple(float, float, int) """
         return self._image_size
+
+    @property
+    def has_data(self):
+        return self._has_data
+
+    @has_data.setter
+    def has_data(self, value):
+        self._has_data = value
+
+    def set_samples_unit(self, val):
+        self._samples_unit = val
 
     def set_colormap(self, colormap):
         self._colormap_name = colormap
@@ -254,10 +269,11 @@ class SliceViewContext(QObject):
         self.load_data()
 
     def load_data(self):
-        for m in [sm for sm in self._available_slice_models if sm.dirty and sm.visible]:
-            # print("loading data for %s" % m.title)
-            m.data = self._slice_data_source.read_slice(m.index_direction, m.index)
-        self.data_changed.emit()
+        if self._has_data:
+            for m in [sm for sm in self._available_slice_models if sm.dirty and sm.visible]:
+                # print("loading data for %s" % m.title)
+                m.data = self._slice_data_source.read_slice(m.index_direction, m.index)
+        self.data_changed.emit(self._available_slice_models)
 
     def _reset(self):
         self._global_max = None

@@ -12,18 +12,33 @@ class EmptyDataSource(object):
         self._data = np.zeros((2, 2), dtype=np.single)
         self._data[0, 0] = -1.0
         self._data[1, 1] = 1.0
+        self._xlines = [0, 1]
+        self._ilines = [0, 1]
+        self._samples = []  # changed to allow dims() calculate len(samples)
 
     @property
     def ilines(self):
-        return [0, 1]
+        return self._ilines
+
+    @ilines.setter
+    def ilines(self, value):
+        self._ilines = value
 
     @property
     def xlines(self):
-        return [0, 1]
+        return self._xlines
+
+    @xlines.setter
+    def xlines(self, value):
+        self._xlines = value
 
     @property
     def samples(self):
-        return [0, 1]
+        return self._samples
+
+    @samples.setter
+    def samples(self, value):
+        self._samples = value
 
     @property
     def iline(self):
@@ -56,6 +71,7 @@ class SliceDataSource(QObject):
         self._source = None
         """ :type: segyio.SegyFile """
         self.set_source_filename(filename, **kwargs)
+        self._source_filename = filename
 
     def _close_current_file(self):
         if isinstance(self._source, segyio.SegyFile):
@@ -68,11 +84,16 @@ class SliceDataSource(QObject):
     def file_size(self):
         return self._file_size
 
+    @property
+    def source_filename(self):
+        return self._source_filename
+
     def set_source_filename(self, filename, **kwargs):
         if filename:
             try:
                 file_size = os.stat(filename).st_size
                 source = segyio.open(filename, "r", **kwargs)
+                self._source_filename = filename
             except:
                 raise
             else:
@@ -122,3 +143,13 @@ class SliceDataSource(QObject):
         offset_count = 1
         sample_count = len(self._source.samples)
         return iline_count, xline_count, offset_count, sample_count
+
+    def set_indexes(self, direction, values):
+        if direction == SliceDirection.inline:
+            self._source.ilines = values
+        elif direction == SliceDirection.crossline:
+            self._source.xlines = values
+        elif direction == SliceDirection.depth:
+            self._source.samples = values
+        else:
+            raise ValueError("Unknown direction: %s" % direction)
