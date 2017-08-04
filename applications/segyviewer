@@ -27,7 +27,7 @@ class SegyViewer(QMainWindow):
         self.setCentralWidget(self._segy_view_widget)
         self.setWindowIcon(resource_icon("350px-SEGYIO.png"))
 
-        toolbar = self._segy_view_widget.toolbar()
+        toolbar = self._segy_view_widget.toolbar
         open_button = QToolButton()
         open_button.setToolTip("Open a SEG-Y file")
         open_button.setIcon(resource_icon("folder.png"))
