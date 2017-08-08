@@ -1,6 +1,6 @@
 from PyQt4.QtGui import QFileDialog, QToolButton, QToolBar, QVBoxLayout, QWidget, QWidgetAction
 
-from segyviewlib import ColormapCombo, LayoutCombo, SettingsWindow, SliceViewContext
+from segyviewlib import ColormapCombo, LayoutCombo, SettingsWindow, SliceViewContext, HelpWindow
 from segyviewlib import SliceDataSource, SliceModel, SliceDirection as SD, SliceViewWidget, resource_icon
 
 
@@ -26,6 +26,7 @@ class SegyViewWidget(QWidget):
         layout = QVBoxLayout()
 
         self._settings_window = SettingsWindow(self._context, self)
+        self._help_window = HelpWindow(self)
 
         self._toolbar = self._create_toolbar(color_maps)
         self._toolbar.setVisible(show_toolbar)
@@ -59,6 +60,11 @@ class SegyViewWidget(QWidget):
         """ :rtype: QWidget """
         return self._settings_window
 
+    @property
+    def help_window(self):
+        """ :rtype: QWidget """
+        return self._help_window
+
     def _create_toolbar(self, color_maps):
         toolbar = QToolBar()
         toolbar.setFloatable(False)
@@ -88,11 +94,23 @@ class SegyViewWidget(QWidget):
         self._settings_button.toggled.connect(self._show_settings)
         toolbar.addWidget(self._settings_button)
 
+        self._help_button = QToolButton()
+        self._help_button.setToolTip("View help")
+        self._help_button.setIcon(resource_icon("help.png"))
+        self._help_button.setCheckable(True)
+        self._help_button.toggled.connect(self._show_help)
+        toolbar.addWidget(self._help_button)
+
         def toggle_on_close(event):
             self._settings_button.setChecked(False)
             event.accept()
 
+        def toggle_on_close_help(event):
+            self._help_button.setChecked(False)
+            event.accept()
+
         self._settings_window.closeEvent = toggle_on_close
+        self._help_window.closeEvent = toggle_on_close_help
 
         self._colormap_combo.setCurrentIndex(45)
         self.set_default_layout()
@@ -143,6 +161,11 @@ class SegyViewWidget(QWidget):
         self._settings_window.setVisible(toggled)
         if self._settings_window.isMinimized():
             self._settings_window.showNormal()
+
+    def _show_help(self, toggled):
+        self._help_window.setVisible(toggled)
+        if self._help_window.isMinimized():
+            self._help_window.showNormal()
 
     def show_toolbar(self, toolbar, layout_combo=True, colormap=True, save=True, settings=True):
         self._toolbar.setVisible(toolbar)
