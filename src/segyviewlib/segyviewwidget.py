@@ -65,6 +65,11 @@ class SegyViewWidget(QWidget):
         """ :rtype: QWidget """
         return self._help_window
 
+    # custom signal slots are required to be manually disconnected
+    # https://stackoverflow.com/questions/15600014/pyqt-disconnect-slots-new-style
+    def __del__(self):
+        self._layout_combo.layout_changed.disconnect(self._slice_view_widget.set_plot_layout)
+
     def _create_toolbar(self, color_maps):
         toolbar = QToolBar()
         toolbar.setFloatable(False)
