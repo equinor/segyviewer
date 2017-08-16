@@ -26,16 +26,14 @@ class SegyTabWidget(QWidget):
         :type segywidgets: list[segyviewlib.SegyViewWidget]
         :type parent: QObject
         """
-
-        self._segywidgets = segywidgets
+        self._context = None
+        self._segywidgets = segywidgets if segywidgets else []
         self._tab_widget = QTabWidget()
-
-        if self._segywidgets is None:
-            self._context = None
-        else:
-            self.initialize()
+        self.initialize()
 
     def initialize(self):
+        if len(self._segywidgets) == 0: return
+
         layout = QVBoxLayout()
 
         slice_data_source, slice_models = self._setup_model_source()
@@ -211,6 +209,9 @@ class SegyTabWidget(QWidget):
         slice_models = [inline, xline, depth]
 
         return slice_data_source, slice_models
+
+    def __del__(self):
+        self.layout_combo.layout_changed.disconnect(self._plot_layout_changed)
 
     def _create_toolbar(self):
         toolbar = QToolBar()

@@ -74,10 +74,13 @@ class SliceDataSource(QObject):
         self._source_filename = filename
 
     def _close_current_file(self):
-        if isinstance(self._source, segyio.SegyFile):
-            self._source.close()
-
         self._file_size = 0
+
+        if self._source is None: return
+
+        try: self._source.close()
+        except AttributeError: pass
+
         self._source = None
 
     @property
