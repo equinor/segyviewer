@@ -188,6 +188,7 @@ class SegyTabWidget(QWidget):
         self._tab_widget.currentWidget().context.load_data()
 
     def _tab_changed(self):
+        if self._tab_widget.count() == 0: return
         widget_spec = self._tab_widget.currentWidget().slice_view_widget.current_layout()
         setting_spec = self.layout_combo.get_current_layout()
         if widget_spec != setting_spec:
