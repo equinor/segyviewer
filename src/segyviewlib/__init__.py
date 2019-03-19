@@ -45,6 +45,6 @@ from .segywidgetcollection import SegyTabWidget
 
 from .version import version as __version__
 
-__copyright__ = 'Copyright 2016, Statoil ASA'
+__copyright__ = 'Copyright 2016--2019, Equinor ASA'
 __license__ = 'GNU Lesser General Public License version 3'
 __status__ = 'Production'
