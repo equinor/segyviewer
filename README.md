@@ -27,13 +27,13 @@ To build segyviewer you need:
  * [setuptools](https://pypi.python.org/pypi/setuptools) version 28 or greater
  * [setuptools-scm](https://pypi.python.org/pypi/setuptools_scm)
  * [PyQt4](https://www.riverbankcomputing.com/software/pyqt/download)
- * [segyio](https://github.com/Statoil/segyio)
+ * [segyio](https://github.com/equinor/segyio)
  * [matplotlib](https://matplotlib.org/)
 
 To build and install segyviewer, perform the following actions in your console:
 
 ```bash
-git clone https://github.com/Statoil/segyviewer
+git clone https://github.com/equinor/segyviewer
 cd segyviewer
 python setup.py build
 python setup.py install

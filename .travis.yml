@@ -43,6 +43,7 @@ install:
         ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/sip*
               $VIRTUAL_ENV/lib/python2.7/site-packages;
     fi
+  - pip install --upgrade pip
   - pip install -r requirements.txt
   - python setup.py install
 
