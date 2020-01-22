@@ -57,7 +57,7 @@ current cube, colormap interpolation, export, etc.
 
 To build segyviewer you need:
 
- * [Python](https://www.python.org/) 2.7 or 3.x.
+ * [Python](https://www.python.org/) 2.7
  * [numpy](http://www.numpy.org/) version 1.10 or greater
  * [setuptools](https://pypi.python.org/pypi/setuptools) version 28 or greater
  * [setuptools-scm](https://pypi.python.org/pypi/setuptools_scm)
